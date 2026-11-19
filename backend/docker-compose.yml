@@ -1,0 +1,20 @@
+
+services:
+  genmarsdb:
+    image: postgres:17-alpine
+    container_name: genmars_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: genmars_user
+      POSTGRES_PASSWORD: Gen@738579
+      POSTGRES_DB: genmars_tech_db
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - genmarsdb_data:/var/lib/postgresql/data
+
+volumes:
+  genmarsdb_data:
