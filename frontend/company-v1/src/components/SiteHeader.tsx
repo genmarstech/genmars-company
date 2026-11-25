@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from '../router'
 import { Link } from './Link'
+import { useSession } from '../auth/session'
 import { caseStudies } from '../data/site'
 import { Icon, LogoMark } from './Icon'
 import './SiteHeader.css'
@@ -15,6 +16,7 @@ const links = [
 
 export function SiteHeader() {
   const path = usePathname()
+  const { user } = useSession()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -50,6 +52,9 @@ export function SiteHeader() {
         </div>
 
         <div className="sh-actions">
+          <Link to={user ? '/account' : '/login'} className="sh-login">
+            {user ? 'My account' : 'Client login'}
+          </Link>
           <Link to="/contact" className="btn btn--sm">
             Get a quote
             <Icon name="arrow" size={16} />

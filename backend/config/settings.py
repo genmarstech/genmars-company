@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'accounts',
     'applications_communications',
@@ -153,7 +154,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    # Token auth for the website and client portal; sessions for the Django admin.
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -163,6 +166,7 @@ REST_FRAMEWORK = {
         'login': '5/min',
         'register': '10/hour',
         'enquiry': '5/hour',
+        'password_reset': '5/hour',
     },
 }
 
@@ -211,8 +215,23 @@ STORAGES = {
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-# Uses SMTP when EMAIL_HOST is set in .env, otherwise prints emails to the console.
-if os.getenv('EMAIL_HOST'):
+# Sends through Resend when RESEND_EMAIL_API_KEY is set, through any SMTP server when
+# EMAIL_HOST is set, and otherwise prints emails to the console.
+if os.getenv('RESEND_EMAIL_API_KEY') and not os.getenv('EMAIL_HOST'):
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': {
+                'host': 'smtp.resend.com',
+                'port': 587,
+                'username': 'resend',
+                'password': os.environ['RESEND_EMAIL_API_KEY'],
+                'use_tls': True,
+                'timeout': 10,
+            },
+        },
+    }
+elif os.getenv('EMAIL_HOST'):
     MAILERS = {
         'default': {
             'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
@@ -233,8 +252,11 @@ else:
         },
     }
 
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Genmars Tech <info@genmars.co.ke>')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or f"Genmars Tech <{os.getenv('EMAIL') or 'info@genmars.co.ke'}>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# The website, used to build links in emails (e.g. password reset).
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173' if DEBUG else 'https://company-v1-gamma.vercel.app').rstrip('/')
 
 # Where new website enquiries are sent.
 ENQUIRY_NOTIFY_EMAIL = os.getenv('ENQUIRY_NOTIFY_EMAIL', 'info@genmars.co.ke')

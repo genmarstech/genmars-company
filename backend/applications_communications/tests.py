@@ -62,7 +62,7 @@ class EnquiryApiTests(APITestCase):
 
     def test_inbox_is_staff_only(self):
         self.client.post('/api/v1/enquiries/', BRIEF, format='json')
-        self.assertEqual(self.client.get('/api/v1/enquiries/inbox/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get('/api/v1/enquiries/inbox/').status_code, status.HTTP_401_UNAUTHORIZED)
         self.client.force_authenticate(self.client_user)
         self.assertEqual(self.client.get('/api/v1/enquiries/inbox/').status_code, status.HTTP_403_FORBIDDEN)
 
