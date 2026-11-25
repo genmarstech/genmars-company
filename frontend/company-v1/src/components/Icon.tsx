@@ -1,7 +1,7 @@
 import type { IconName } from '../data/site'
 import type { ReactNode } from 'react'
 
-const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock', ReactNode> = {
+const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock' | 'chart' | 'team' | 'support' | 'search' | 'layout' | 'rocket', ReactNode> = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
   code: <path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" />,
   globe: (
@@ -51,6 +51,40 @@ const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'cl
     </>
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  chart: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+  team: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" />
+    </>
+  ),
+  support: (
+    <>
+      <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+      <rect x="2.5" y="13" width="4" height="6" rx="1.5" />
+      <rect x="17.5" y="13" width="4" height="6" rx="1.5" />
+      <path d="M19.5 19a3 3 0 0 1-3 3H13" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4.5 4.5" />
+    </>
+  ),
+  layout: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <path d="M3 9h18M9 9v11" />
+    </>
+  ),
+  rocket: (
+    <>
+      <path d="M5 15c-1.5 1.5-2 4-2 6 2 0 4.5-.5 6-2M14.5 4.5C17 2 20.5 2 22 2c0 1.5 0 5-2.5 7.5l-7 7-5-5z" />
+      <path d="M8 11l-3-.5L7.5 8H11M13 16l.5 3 2.5-2.5V13" />
+      <circle cx="16" cy="8" r="1.5" />
+    </>
+  ),
   phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />,
   clock: (
     <>

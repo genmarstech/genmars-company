@@ -95,7 +95,7 @@
   padding: 32px;
   border-radius: var(--r-md);
   border: 1px solid var(--line);
-  background: rgba(5, 7, 13, 0.5);
+  background: var(--surface-3);
 }
 .cs-sent h3 {
   font-size: 22px;
@@ -125,4 +125,54 @@
 .cs-sent strong {
   color: var(--white);
   font-weight: 500;
+}
+
+.cs-form-title {
+  grid-column: 1 / -1;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+/* Light theme: the form becomes a white card */
+.theme-light .cs-panel {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.theme-light .cs-form,
+.theme-light .cs-sent {
+  align-self: flex-start;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+/* Contact page */
+.cs--page {
+  padding-top: 64px;
+  padding-bottom: 96px;
+}
+.cs--page .cs-title {
+  font-size: clamp(36px, 4.4vw, 56px);
+  font-weight: 700;
+  line-height: 1.08;
+}
+.cs-photo {
+  margin-top: 8px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px -40px rgba(20, 50, 140, 0.45);
+}
+.cs-photo img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+}
+@media (max-width: 900px) {
+  .cs-photo {
+    display: none;
+  }
 }

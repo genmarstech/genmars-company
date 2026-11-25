@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
+import { ServiceArt } from '../components/ServiceArt'
 import { formatKes, services } from '../data/site'
 import { Link } from '../components/Link'
 import './Services.css'
@@ -50,12 +51,40 @@ export function Services() {
   return (
     <>
       <section className="wrap sv-hero">
-        <span className="eyebrow">Services &amp; prices</span>
-        <h1 className="sv-title">What we do, what it costs, and how long it takes.</h1>
-        <p className="lead sv-lead">
-          Prices are starting points in Kenyan shillings. After a free first conversation you get a written quote with
-          one fixed price.
-        </p>
+        <div className="sv-hero-copy">
+          <span className="eyebrow eyebrow--line">Our services</span>
+          <h1 className="sv-title">Professional software solutions for your business.</h1>
+          <p className="lead sv-lead">
+            From websites to custom systems, we build solutions that grow with you. Prices below are starting points in
+            Kenyan shillings, and every project gets a written, fixed quote.
+          </p>
+        </div>
+        <div className="sv-hero-art" aria-hidden="true">
+          <ServiceArt slug="custom-software" />
+        </div>
+      </section>
+
+      <section className="wrap sv-grid" aria-label="Services at a glance">
+        {services.map((s) => (
+          <a key={s.slug} href={`#${s.slug}`} className="card sv-tile">
+            <span className="sv-tile-icon">
+              <Icon name={s.icon} size={20} strokeWidth={1.8} />
+            </span>
+            <span className="sv-tile-title">{s.title}</span>
+            <span className="sv-tile-text">{s.desc.split('.')[0]}.</span>
+            <span className="sv-tile-price">
+              {s.from === null ? 'Quoted per project' : `From ${formatKes(s.from)}`}
+              {s.per && ` / ${s.per}`} <Icon name="arrow" size={14} />
+            </span>
+          </a>
+        ))}
+        <Link to="/contact" className="sv-tile sv-tile--ask">
+          <span className="sv-tile-title">Not sure what you need?</span>
+          <span className="sv-tile-text">Describe the problem and we’ll suggest the simplest fix, with a fixed quote.</span>
+          <span className="sv-tile-price">
+            Ask us <Icon name="arrow" size={14} />
+          </span>
+        </Link>
       </section>
 
       <section className="wrap sv-list" aria-label="Services">

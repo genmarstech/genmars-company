@@ -10,7 +10,8 @@ type Errors = Partial<Record<Field | 'form', string>>
 // Django field names → form field names
 const apiFields: Record<string, Field> = { full_name: 'name', email: 'email', message: 'message' }
 
-export function ContactSection() {
+export function ContactSection({ variant = 'section' }: { variant?: 'section' | 'page' }) {
+  const isPage = variant === 'page'
   const [errors, setErrors] = useState<Errors>({})
   const [sending, setSending] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
@@ -70,14 +71,18 @@ export function ContactSection() {
   }
 
   return (
-    <section id="contact" className="wrap cs">
+    <section id="contact" className={`wrap cs${isPage ? ' cs--page' : ''}`}>
       <div className="cs-panel">
         <div className="cs-intro">
-          <span className="eyebrow">Get a quote</span>
-          <h2 className="cs-title">Tell us about your project.</h2>
+          <span className="eyebrow eyebrow--line">{isPage ? 'Contact us' : 'Get a quote'}</span>
+          {isPage ? (
+            <h1 className="cs-title">Let’s build something great together.</h1>
+          ) : (
+            <h2 className="cs-title">Tell us about your project.</h2>
+          )}
           <p className="muted cs-copy">
-            A few lines is enough. We reply within one working day, usually with a couple of questions and a time
-            for a free call.
+            Have a project in mind? A few lines is enough. We reply within one working day, usually with a couple of
+            questions and a time for a free call.
           </p>
           <ul className="cs-promise">
             <li>
@@ -112,6 +117,11 @@ export function ContactSection() {
               </span>
             )}
           </div>
+          {isPage && (
+            <div className="cs-photo">
+              <img src="/building-2.jpg" alt="Glass office towers reflecting a blue sky" width={1400} height={1050} />
+            </div>
+          )}
         </div>
 
         {sentTo ? (
@@ -129,7 +139,10 @@ export function ContactSection() {
             </button>
           </div>
         ) : (
-          <form className="cs-form" noValidate onSubmit={onSubmit}>
+          <form className="cs-form" noValidate onSubmit={onSubmit} aria-labelledby="quote-form-title">
+            <h2 id="quote-form-title" className="cs-form-title">
+              Request a project quote
+            </h2>
             <label className="field" data-invalid={!!errors.name}>
               Full name
               <input name="name" type="text" autoComplete="name" placeholder="Jane Wanjiru" aria-invalid={!!errors.name} />

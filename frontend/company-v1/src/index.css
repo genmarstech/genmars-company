@@ -25,6 +25,9 @@
   --wrap: 1240px;
   --r-sm: 12px;
   --r-md: 20px;
+  --field-bg: rgba(5, 7, 13, 0.6);
+  --card-shadow: none;
+  --header-bg: rgba(5, 7, 13, 0.82);
 
   color-scheme: dark;
   font: 16px/1.55 var(--sans);
@@ -33,6 +36,32 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Light pages and sections (Services, How we work, Contact, homepage body) */
+.theme-light {
+  --midnight: #f5f8ff;
+  --surface: #ffffff;
+  --surface-2: #eef3ff;
+  --surface-3: #f2f6fd;
+  --cobalt: #2f5bf5;
+  --ice: #2f5bf5;
+  --signal: #0f9d88;
+  --frost: #1e2a44;
+  --white: #0b1530;
+  --text-2: #33415e;
+  --muted: #55627d;
+  --subtle: #6b7690;
+  --faint: #98a3b9;
+  --line: rgba(20, 40, 90, 0.1);
+  --line-soft: rgba(20, 40, 90, 0.08);
+  --line-strong: rgba(20, 40, 90, 0.18);
+  --field-bg: #ffffff;
+  --card-shadow: 0 1px 2px rgba(15, 30, 70, 0.04), 0 12px 32px -18px rgba(15, 30, 70, 0.18);
+  --header-bg: rgba(255, 255, 255, 0.9);
+  color-scheme: light;
+  color: var(--frost);
+  background: var(--midnight);
 }
 
 *,
@@ -142,6 +171,18 @@ textarea::placeholder {
   font-weight: 500;
   color: var(--ice);
 }
+.eyebrow--line {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow--line::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
 .label {
   font-size: 13px;
   font-weight: 500;
@@ -188,13 +229,13 @@ textarea::placeholder {
   border: 0;
   border-radius: 999px;
   background: var(--cobalt);
-  color: var(--white);
+  color: #ffffff;
   font-weight: 500;
   cursor: pointer;
   transition: filter 0.15s ease, transform 0.15s ease;
 }
 .btn:hover {
-  color: var(--white);
+  color: #ffffff;
   filter: brightness(1.12);
 }
 .btn:active {
@@ -241,11 +282,11 @@ textarea::placeholder {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--card-shadow);
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .card--hover:hover {
   border-color: rgba(142, 166, 255, 0.35);
-  background-color: #0c1222;
 }
 
 .chip {
@@ -253,7 +294,7 @@ textarea::placeholder {
   align-items: center;
   padding: 5px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 200, 0.18);
+  border: 1px solid var(--line-strong);
   font-size: 14px;
   color: var(--text-2);
 }
@@ -296,8 +337,8 @@ textarea::placeholder {
   min-height: 48px;
   padding: 0 14px;
   border-radius: var(--r-sm);
-  border: 1px solid rgba(148, 163, 200, 0.2);
-  background: rgba(5, 7, 13, 0.6);
+  border: 1px solid var(--line-strong);
+  background: var(--field-bg);
   color: var(--white);
   font-size: 15px;
   transition: border-color 0.15s ease;
