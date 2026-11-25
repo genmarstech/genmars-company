@@ -429,7 +429,6 @@
 .pt-proj-card:hover {
   color: inherit;
   border-color: rgba(47, 91, 245, 0.35);
-  transform: translateY(-2px);
 }
 .pt-proj-card h2 {
   font-size: 18px;

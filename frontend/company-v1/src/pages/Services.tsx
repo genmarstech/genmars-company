@@ -147,7 +147,7 @@ export function Services() {
           {faq.map(([q, a], i) => {
             const isOpen = i === open
             return (
-              <div key={q} className="sv-faq-item">
+              <div key={q} className={`sv-faq-item${isOpen ? ' is-open' : ''}`}>
                 <h3>
                   <button
                     type="button"
@@ -156,12 +156,14 @@ export function Services() {
                     onClick={() => setOpen(isOpen ? -1 : i)}
                   >
                     {q}
-                    <span aria-hidden="true">{isOpen ? '−' : '+'}</span>
+                    <span className="sv-faq-icon" aria-hidden="true" />
                   </button>
                 </h3>
-                <p id={`faq-${i}`} className="muted" hidden={!isOpen}>
-                  {a}
-                </p>
+                <div id={`faq-${i}`} className="sv-faq-answer" inert={!isOpen}>
+                  <div>
+                    <p className="muted">{a}</p>
+                  </div>
+                </div>
               </div>
             )
           })}

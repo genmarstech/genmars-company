@@ -6,14 +6,17 @@
   background: var(--header-bg);
   backdrop-filter: saturate(140%) blur(14px);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
-  transition: background-color 0.2s ease, border-color 0.2s ease, backdrop-filter 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+/* Scrolled: the bar tightens and lifts off the page with a hairline and soft shadow.
+   The margin keeps its slot in the page the same height, so nothing below jumps. */
 .sh--scrolled,
 .sh--open {
-  background: var(--header-bg);
   border-bottom-color: var(--line-soft);
-  backdrop-filter: saturate(140%) blur(14px);
-  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  box-shadow: 0 6px 20px -14px rgba(15, 30, 70, 0.35);
+}
+.sh--scrolled {
+  margin-bottom: 16px;
 }
 
 .sh-nav {
@@ -23,6 +26,18 @@
   gap: 24px;
   padding-top: 18px;
   padding-bottom: 18px;
+  transition: padding 0.2s ease;
+}
+.sh--scrolled .sh-nav {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.sh-brand svg {
+  transition: transform 0.2s ease;
+  transform-origin: left center;
+}
+.sh--scrolled .sh-brand svg {
+  transform: scale(0.88);
 }
 
 .sh-brand {
@@ -82,7 +97,7 @@
   background: var(--cobalt);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.18s ease;
 }
 .sh-links a:hover {
   color: var(--white);
@@ -143,17 +158,28 @@
     flex-wrap: wrap;
   }
   .sh-links {
-    display: none;
     order: 3;
     flex-basis: 100%;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: 8px 0 12px;
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
     font-size: 17px;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, visibility 0s linear 0.25s;
   }
   .sh--open .sh-links {
-    display: flex;
+    max-height: 360px;
+    padding: 8px 0 12px;
+    opacity: 1;
+    visibility: visible;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+  }
+  .sh--open.sh--scrolled {
+    margin-bottom: 16px;
   }
   .sh-links a {
     padding: 14px 4px;
