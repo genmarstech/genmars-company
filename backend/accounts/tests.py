@@ -166,3 +166,54 @@ class PasswordResetTests(APITestCase):
         response = self.client.post('/api/v1/auth/password-reset/confirm/', {'uid': uid, 'token': token, 'password': '123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('password', response.data)
+
+
+@override_settings(
+    MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}},
+    ENQUIRY_NOTIFY_EMAIL='team@genmars.test',
+)
+class OnboardingTests(APITestCase):
+
+    URL = '/api/v1/auth/users/me/profile/'
+
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(email='client@example.com', password='S3cure-pass-123', full_name='Jane Client')
+        self.client.force_authenticate(self.user)
+
+    def test_new_user_is_not_onboarded(self):
+        self.assertFalse(self.client.get('/api/v1/auth/users/me/').data['onboarding_completed'])
+        self.assertIsNone(self.client.get(self.URL).data['onboarding_completed_at'])
+
+    def test_save_steps_then_complete(self):
+        step = self.client.patch(self.URL, {'company_name': 'Acme Ltd', 'company_size': '2_10', 'phone_number': '+254700000000'}, format='json')
+        self.assertEqual(step.status_code, status.HTTP_200_OK)
+        self.assertIsNone(step.data['onboarding_completed_at'])
+
+        done = self.client.patch(
+            self.URL,
+            {'services': ['websites', 'e-commerce', 'websites'], 'contact_method': 'whatsapp', 'goals': 'Sell online', 'complete': True},
+            format='json',
+        )
+        self.assertEqual(done.status_code, status.HTTP_200_OK)
+        self.assertEqual(done.data['services'], ['e-commerce', 'websites'])
+        self.assertIsNotNone(done.data['onboarding_completed_at'])
+        self.assertTrue(self.client.get('/api/v1/auth/users/me/').data['onboarding_completed'])
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.phone_number, '+254700000000')
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['team@genmars.test'])
+        self.assertIn('Acme Ltd', mail.outbox[0].subject)
+
+        # completing again doesn't notify twice
+        self.client.patch(self.URL, {'complete': True}, format='json')
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_unknown_service_is_rejected(self):
+        response = self.client.patch(self.URL, {'services': ['hacking']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_profile_needs_sign_in(self):
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(self.URL).status_code, status.HTTP_401_UNAUTHORIZED)

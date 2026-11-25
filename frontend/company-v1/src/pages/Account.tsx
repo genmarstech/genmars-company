@@ -27,6 +27,11 @@ export function Account() {
         <Link to="/contact" className="btn btn--lg">
           Start a project <Icon name="arrow" />
         </Link>
+        {!user.onboarding_completed && (
+          <Link to="/onboarding" className="btn btn--lg btn--ghost">
+            Finish setting up
+          </Link>
+        )}
         <button
           type="button"
           className="btn btn--lg btn--ghost"

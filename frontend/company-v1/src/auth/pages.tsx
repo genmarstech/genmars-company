@@ -3,7 +3,7 @@ import { Link } from '../components/Link'
 import { navigate } from '../router'
 import { AuthLayout } from './AuthLayout'
 import { AuthField, FormMessage, SubmitButton } from './fields'
-import { ApiError, login, requestPasswordReset, resetPassword, signUp, type FieldErrors } from './session'
+import { ApiError, login, requestPasswordReset, resetPassword, signUp, type FieldErrors, type User } from './session'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -12,8 +12,9 @@ function formValues(e: FormEvent<HTMLFormElement>) {
   return (k: string) => String(data.get(k) ?? '').trim()
 }
 
-/** Where to go after signing in: the page that sent them here, or their account. */
-function nextPath() {
+/** Where to go after signing in: onboarding first, then the page that sent them here, or their account. */
+function nextPath(user: User) {
+  if (!user.onboarding_completed) return '/onboarding'
   const next = new URLSearchParams(window.location.search).get('next')
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/account'
 }
@@ -59,8 +60,7 @@ export function LoginPage() {
         ...(password ? {} : { password: 'Enter your password.' }),
       }),
       async () => {
-        await login(email, password)
-        navigate(nextPath())
+        navigate(nextPath(await login(email, password)))
       },
     )
   }
@@ -106,8 +106,7 @@ export function SignUpPage() {
         ...(confirm === password ? {} : { confirm: 'The passwords don’t match.' }),
       }),
       async () => {
-        await signUp(fullName, email, password)
-        navigate(nextPath())
+        navigate(nextPath(await signUp(fullName, email, password)))
       },
     )
   }
@@ -191,8 +190,7 @@ export function ResetPasswordPage() {
         ...(confirm === password ? {} : { confirm: 'The passwords don’t match.' }),
       }),
       async () => {
-        await resetPassword(uid, token, password)
-        navigate('/account')
+        navigate(nextPath(await resetPassword(uid, token, password)))
       },
     )
   }
