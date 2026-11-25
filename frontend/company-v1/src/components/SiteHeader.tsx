@@ -52,8 +52,8 @@ export function SiteHeader() {
         </div>
 
         <div className="sh-actions">
-          <Link to={user ? '/account' : '/login'} className="sh-login">
-            {user ? 'My account' : 'Client login'}
+          <Link to={user ? '/portal' : '/login'} className="sh-login">
+            {user ? 'My portal' : 'Client login'}
           </Link>
           <Link to="/contact" className="btn btn--sm">
             Get a quote

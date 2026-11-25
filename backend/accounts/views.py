@@ -64,6 +64,9 @@ class UsersViewset(viewsets.ModelViewSet):
         if request.method == 'GET':
             return Response(self.get_serializer(request.user).data)
 
+        if request.data.get('password') and not request.user.check_password(request.data.get('current_password', '')):
+            return Response({'current_password': ['Your current password is incorrect.']}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.get_serializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()

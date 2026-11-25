@@ -16,7 +16,7 @@ function formValues(e: FormEvent<HTMLFormElement>) {
 function nextPath(user: User) {
   if (!user.onboarding_completed) return '/onboarding'
   const next = new URLSearchParams(window.location.search).get('next')
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/account'
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/portal'
 }
 
 function useSubmit() {
