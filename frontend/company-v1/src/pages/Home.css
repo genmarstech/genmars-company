@@ -2,13 +2,6 @@
 .hm-hero {
   position: relative;
 }
-.hm-hero-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(60% 50% at 50% 0%, rgba(47, 91, 245, 0.14), rgba(47, 91, 245, 0) 70%),
-    linear-gradient(180deg, #eef3ff 0%, var(--midnight) 70%);
-}
 .hm-hero-copy {
   position: relative;
   padding-top: 72px;
@@ -18,17 +11,6 @@
   align-items: center;
   text-align: center;
   gap: 24px;
-}
-.hm-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(47, 91, 245, 0.08);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ice);
 }
 .hm-hero .h1 {
   max-width: 940px;

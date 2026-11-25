@@ -55,9 +55,7 @@ export function Home() {
     <>
       {/* Hero */}
       <section id="top" className="hm-hero">
-        <div className="hm-hero-bg" aria-hidden="true" />
         <div className="wrap hm-hero-copy">
-          <p className="hm-kicker">Based in Nairobi, working with businesses everywhere</p>
           <h1 className="h1">
             Websites and business software that <span className="serif">just work.</span>
           </h1>
