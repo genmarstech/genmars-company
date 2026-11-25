@@ -7,6 +7,7 @@ import { Contact } from './pages/Contact'
 import { HowWeWork } from './pages/HowWeWork'
 import { Services } from './pages/Services'
 import { Account } from './pages/Account'
+import { Onboarding } from './pages/Onboarding'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignUpPage } from './auth/pages'
 import { usePathname } from './router'
 
@@ -21,6 +22,7 @@ const routes: Record<string, Route> = {
   '/signup': { title: 'Create your account · Genmars Tech', page: SignUpPage, bare: true },
   '/forgot-password': { title: 'Forgot password · Genmars Tech', page: ForgotPasswordPage, bare: true },
   '/reset-password': { title: 'Choose a new password · Genmars Tech', page: ResetPasswordPage, bare: true },
+  '/onboarding': { title: 'Set up your account · Genmars Tech', page: Onboarding, bare: true },
   '/account': { title: 'Your account · Genmars Tech', page: Account },
 }
 

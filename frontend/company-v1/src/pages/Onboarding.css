@@ -1,0 +1,244 @@
+.ob {
+  min-height: 100vh;
+  padding: 32px 20px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  background:
+    radial-gradient(80% 50% at 50% 0%, #e3ebff 0%, rgba(227, 235, 255, 0) 70%),
+    var(--midnight);
+}
+
+.ob-top {
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+.ob-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--white);
+}
+
+/* Stepper: numbered dots joined by a line */
+.ob-steps {
+  width: 100%;
+  max-width: 560px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.ob-steps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--subtle);
+}
+.ob-steps li + li::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--line-strong);
+  z-index: 0;
+}
+.ob-steps li.is-done::before,
+.ob-steps li.is-current::before {
+  background: var(--cobalt);
+}
+.ob-dot {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--subtle);
+}
+.is-current .ob-dot,
+.is-done .ob-dot {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  color: #ffffff;
+}
+.is-current .ob-step-label {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.ob-card {
+  width: 100%;
+  max-width: 880px;
+  padding: clamp(24px, 5vw, 56px);
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 40px 80px -40px rgba(20, 50, 140, 0.35);
+}
+
+.ob-welcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+}
+.ob-welcome-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+.ob h1 {
+  font-size: clamp(28px, 3.6vw, 40px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--white);
+}
+.ob-welcome-art {
+  padding: 12px;
+  border-radius: 22px;
+  background: #0a0f1c;
+  box-shadow: 0 40px 70px -35px rgba(20, 50, 140, 0.6);
+  transform: rotate(-3deg);
+}
+
+.ob-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.ob-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ob-head h1 {
+  font-size: clamp(24px, 3vw, 32px);
+}
+.ob-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.ob-full {
+  grid-column: 1 / -1;
+}
+.ob-optional {
+  color: var(--faint);
+}
+.ob .field {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.ob .field select {
+  background: var(--surface);
+}
+
+.ob-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ob-chip {
+  min-height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.ob-chip:hover {
+  border-color: rgba(47, 91, 245, 0.45);
+}
+.ob-chip[aria-pressed='true'] {
+  border-color: var(--cobalt);
+  background: rgba(47, 91, 245, 0.08);
+  color: var(--cobalt);
+  font-weight: 500;
+}
+
+.ob-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+}
+.ob-actions--center {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ob-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+.ob-done .lead {
+  max-width: 520px;
+}
+.ob-done-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(15, 157, 136, 0.12);
+  color: var(--signal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-skip {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+.ob-skip:hover {
+  color: var(--white);
+}
+
+@media (max-width: 720px) {
+  .ob-welcome {
+    grid-template-columns: 1fr;
+  }
+  .ob-welcome-art {
+    display: none;
+  }
+  .ob-grid {
+    grid-template-columns: 1fr;
+  }
+  .ob-step-label {
+    font-size: 12px;
+  }
+}

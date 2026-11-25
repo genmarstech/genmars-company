@@ -12,6 +12,7 @@ export type User = {
   phone_number: string
   is_staff: boolean
   date_joined: string
+  onboarding_completed: boolean
 }
 
 type Session = { token: string | null; user: User | null }
@@ -76,10 +77,10 @@ export class ApiError extends Error {
 }
 
 /** POST JSON and return the parsed body, turning Django errors into an ApiError. */
-export async function postJson<T>(path: string, body: unknown): Promise<T> {
+export async function postJson<T>(path: string, body: unknown, method = 'POST'): Promise<T> {
   let res: Response
   try {
-    res = await authFetch(path, { method: 'POST', body: JSON.stringify(body) })
+    res = await authFetch(path, { method, body: JSON.stringify(body) })
   } catch {
     throw new ApiError('We couldn’t reach our servers. Check your connection and try again.')
   }
@@ -117,6 +118,11 @@ export async function resetPassword(uid: string, token: string, password: string
   const data = await postJson<AuthResponse>('/api/v1/auth/password-reset/confirm/', { uid, token, password })
   setSession(data)
   return data.user
+}
+
+/** Mark onboarding done in the cached profile without another round trip. */
+export function markOnboarded() {
+  if (session.token && session.user) setSession({ token: session.token, user: { ...session.user, onboarding_completed: true } })
 }
 
 export function requestPasswordReset(email: string) {

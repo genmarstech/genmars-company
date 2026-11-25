@@ -181,7 +181,9 @@ export function ContactSection({ variant = 'section' }: { variant?: 'section' | 
               </select>
             </label>
             <label className="field cs-full">
-              Phone or WhatsApp <span className="cs-optional">(optional)</span>
+              <span>
+                Phone or WhatsApp <span className="cs-optional">(optional)</span>
+              </span>
               <input name="phone" type="tel" autoComplete="tel" placeholder="+254 7XX XXX XXX" />
             </label>
             <label className="field cs-full" data-invalid={!!errors.message}>

@@ -60,3 +60,39 @@ class GenUsers(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"
+
+class ClientProfile(models.Model):
+    """What a client tells us during onboarding, so we can prepare before the first call."""
+
+    class CompanySize(models.TextChoices):
+        SOLO = 'solo', 'Just me'
+        SMALL = '2_10', '2–10 people'
+        MEDIUM = '11_50', '11–50 people'
+        LARGE = '51_plus', '51+ people'
+
+    class ContactMethod(models.TextChoices):
+        EMAIL = 'email', 'Email'
+        PHONE = 'phone', 'Phone call'
+        WHATSAPP = 'whatsapp', 'WhatsApp'
+
+    user = models.OneToOneField(GenUsers, on_delete=models.CASCADE, related_name='client_profile')
+
+    company_name = models.CharField(max_length=255, blank=True, default='')
+    job_title = models.CharField(max_length=120, blank=True, default='')
+    industry = models.CharField(max_length=120, blank=True, default='')
+    company_size = models.CharField(max_length=16, choices=CompanySize.choices, blank=True, default='')
+    website = models.URLField(blank=True, default='')
+
+    # service slugs, e.g. ["websites", "e-commerce"]
+    services = models.JSONField(default=list, blank=True)
+    budget = models.CharField(max_length=32, blank=True, default='')
+    timeline = models.CharField(max_length=64, blank=True, default='')
+    contact_method = models.CharField(max_length=16, choices=ContactMethod.choices, default=ContactMethod.EMAIL)
+    goals = models.TextField(blank=True, default='')
+
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.company_name or self.user.full_name} ({self.user.email})"

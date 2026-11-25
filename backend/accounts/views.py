@@ -12,7 +12,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
-from .serializers import GenUsersSerializers
+from .models import ClientProfile
+from .serializers import ClientProfileSerializer, GenUsersSerializers
 
 
 User = get_user_model()
@@ -35,7 +36,7 @@ class UsersViewset(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'register':
             return [permissions.AllowAny()]
-        if self.action == 'me':
+        if self.action in ('me', 'profile'):
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -69,6 +70,41 @@ class UsersViewset(viewsets.ModelViewSet):
         # changing the password would otherwise log the user out
         update_session_auth_hash(request, user)
         return Response(serializer.data)
+
+
+    @action(detail=False, methods=['get', 'patch'], url_path='me/profile', serializer_class=ClientProfileSerializer)
+    def profile(self, request):
+        """The signed-in client's onboarding details. Send complete=true to finish onboarding."""
+        profile, _ = ClientProfile.objects.get_or_create(user=request.user)
+        if request.method == 'GET':
+            return Response(ClientProfileSerializer(profile).data)
+
+        was_complete = bool(profile.onboarding_completed_at)
+        serializer = ClientProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        profile = serializer.save()
+        if profile.onboarding_completed_at and not was_complete:
+            notify_new_client(profile)
+        return Response(serializer.data)
+
+
+def notify_new_client(profile):
+    """Let the team know a client finished onboarding, with what they told us."""
+    user = profile.user
+    send_mail(
+        subject=f"New client onboarded: {profile.company_name or user.full_name}",
+        message=(
+            f"{user.full_name} ({user.email}, {user.phone_number or 'no phone'}) finished onboarding.\n\n"
+            f"Company: {profile.company_name or '-'} ({profile.get_company_size_display() or 'size not given'})\n"
+            f"Role: {profile.job_title or '-'}\nIndustry: {profile.industry or '-'}\nWebsite: {profile.website or '-'}\n"
+            f"Interested in: {', '.join(profile.services) or '-'}\nBudget: {profile.budget or '-'}\n"
+            f"Timeline: {profile.timeline or '-'}\nPrefers: {profile.get_contact_method_display()}\n\n"
+            f"Goals:\n{profile.goals or '-'}\n"
+        ),
+        from_email=None,
+        recipient_list=[settings.ENQUIRY_NOTIFY_EMAIL],
+        fail_silently=True,
+    )
 
 
 class LoginView(APIView):
