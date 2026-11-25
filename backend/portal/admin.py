@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
-from .models import Invoice, Message, Milestone, Project, ProjectLink
+from .models import ClientNote, Invoice, Message, Milestone, Project, ProjectLink, StaffRate, Task, TimeEntry
 
 
 class MilestoneInline(admin.TabularInline):
@@ -64,3 +64,27 @@ class MessageAdmin(admin.ModelAdmin):
         if not change and not obj.sender_id:
             obj.sender = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['title', 'assignee', 'project', 'status', 'priority', 'due_date']
+    list_filter = ['status', 'priority']
+    search_fields = ['title', 'notes']
+
+
+@admin.register(TimeEntry)
+class TimeEntryAdmin(admin.ModelAdmin):
+    list_display = ['date', 'user', 'project', 'minutes', 'billable', 'note']
+    list_filter = ['billable', 'user']
+
+
+@admin.register(StaffRate)
+class StaffRateAdmin(admin.ModelAdmin):
+    list_display = ['user', 'hourly_cost']
+
+
+@admin.register(ClientNote)
+class ClientNoteAdmin(admin.ModelAdmin):
+    list_display = ['client', 'author', 'pinned', 'created_at']
+    search_fields = ['body']

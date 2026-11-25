@@ -1,30 +1,134 @@
 import { useSession } from '../auth/session'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
-import { Empty, Loading, Panel, TeamLayout } from '../portal/PortalLayout'
-import { formatDate, useApi } from '../portal/useApi'
+import { Empty, Loading, Panel, StatusBadge, TeamLayout } from '../portal/PortalLayout'
+import { formatDate, kes, timeAgo, useApi } from '../portal/useApi'
 import { ActivityChart } from './Chart'
-import type { TeamSummary } from './types'
+import { hm, useMutation } from './shared'
+import type { TeamSummary, Today } from './types'
 
 function greeting() {
   const h = new Date().getHours()
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
 
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
 export function TeamDashboard() {
   const { user } = useSession()
+  const today = useApi<Today>('/api/v1/team/today/')
   const { data, error } = useApi<TeamSummary>('/api/v1/team/summary/')
+  const t = today.data
+  const needs = t ? t.my_tasks_due.length + t.overdue_invoices.length + t.at_risk_projects.length + t.stalled_leads.length : 0
+  const dateLine = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
     <TeamLayout
-      title={`${greeting()}, ${user?.full_name.split(' ')[0] ?? ''}!`}
-      subtitle="Here’s what’s happening with your team today."
+      title={`${greeting()}, ${user?.full_name.split(' ')[0] ?? ''}`}
+      subtitle={t ? `${dateLine}. ${needs ? `${plural(needs, 'thing')} to look at today.` : 'Nothing urgent today.'}` : dateLine}
       actions={
-        <Link to="/team/projects?new=1" className="btn btn--sm">
-          New project <Icon name="arrow" size={16} />
+        <Link to="/team/work?new=1" className="btn btn--sm">
+          New task <Icon name="arrow" size={16} />
         </Link>
       }
     >
+      {!t ? (
+        <Loading error={today.error} />
+      ) : (
+        <div className="tm-today">
+          <Panel title="Your tasks due" action={<Link to="/team/work" className="pt-more">{plural(t.my_open_tasks, 'open task')}</Link>}>
+            <DueTasks tasks={t.my_tasks_due} onDone={today.reload} />
+            {t.my_minutes_today > 0 && <p className="pt-muted pt-small tm-foot">You’ve logged {hm(t.my_minutes_today)} today.</p>}
+          </Panel>
+
+          <Panel
+            title="Overdue invoices"
+            action={t.overdue_invoices.length > 0 && <span className="tm-sum tm-bad">{kes(t.overdue_total)}</span>}
+          >
+            {t.overdue_invoices.length === 0 ? (
+              <Empty>Every sent invoice is within its due date.</Empty>
+            ) : (
+              <ul className="tm-prio">
+                {t.overdue_invoices.slice(0, 6).map((i) => (
+                  <li key={i.id}>
+                    <Link to={`/team/clients/${i.client_id}`}>
+                      <strong>{i.client}</strong>
+                      <span className="pt-muted pt-small">
+                        {i.number} · {i.days === null ? 'marked overdue' : `${plural(i.days, 'day')} late`}
+                      </span>
+                    </Link>
+                    <span className="pt-num">{kes(i.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          <Panel title="Projects at risk" action={<Link to="/team/projects" className="pt-more">All projects</Link>}>
+            {t.at_risk_projects.length === 0 ? (
+              <Empty>All active projects look healthy.</Empty>
+            ) : (
+              <ul className="tm-prio">
+                {t.at_risk_projects.slice(0, 6).map((p) => (
+                  <li key={p.id}>
+                    <Link to={`/team/projects/${p.id}`}>
+                      <strong>{p.name}</strong>
+                      <span className="pt-muted pt-small">
+                        {p.client} · {p.progress}% done{p.due_date ? ` · due ${formatDate(p.due_date, false)}` : ''}
+                      </span>
+                    </Link>
+                    <span className="tm-reasons">
+                      {p.reasons.map((r) => (
+                        <StatusBadge key={r} tone={p.health === 'off_track' ? 'red' : 'amber'}>
+                          {r}
+                        </StatusBadge>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          <Panel title="Leads going cold" action={<Link to="/team/pipeline" className="pt-more">Pipeline</Link>}>
+            {t.stalled_leads.length === 0 ? (
+              <Empty>Every lead has been touched recently.</Empty>
+            ) : (
+              <ul className="tm-prio">
+                {t.stalled_leads.slice(0, 6).map((l) => (
+                  <li key={l.id}>
+                    <Link to={`/team/leads#lead-${l.id}`}>
+                      <strong>{l.name}</strong>
+                      <span className="pt-muted pt-small">
+                        {l.service} · {l.status_label}
+                      </span>
+                    </Link>
+                    <span className="pt-muted pt-small tm-nowrap">{l.status === 'new' ? `Waiting ${plural(l.days, 'day')}` : `Quiet ${plural(l.days, 'day')}`}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          {t.waiting_replies_count > 0 && (
+            <Panel title={`Waiting for a reply · ${t.waiting_replies_count}`} className="tm-wide" action={<Link to="/team/messages" className="pt-more">Messages</Link>}>
+              <ul className="tm-prio">
+                {t.waiting_replies.map((m) => (
+                  <li key={m.client}>
+                    <Link to={`/team/messages?client=${m.client}`}>
+                      <strong>{m.client_name}</strong>
+                      <span className="pt-muted pt-small tm-clip">{m.last_message}</span>
+                    </Link>
+                    <span className="pt-muted pt-small tm-nowrap">{timeAgo(m.last_at)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
+        </div>
+      )}
+
+      <h2 className="tm-section">This week</h2>
       {!data ? (
         <Loading error={error} />
       ) : (
@@ -36,31 +140,25 @@ export function TeamDashboard() {
             <Stat label="Clients" value={data.clients} note={`+${data.new_clients_this_month} this month`} />
           </div>
 
-          <div className="tm-alerts">
-            <Alert to="/team/leads" count={data.new_enquiries} label="new leads" />
-            <Alert to="/team/messages" count={data.unanswered_messages} label="messages waiting for a reply" />
-            <Alert to="/team/invoices" count={data.unpaid_invoices} label="unpaid invoices" />
-          </div>
-
           <div className="pt-two">
             <Panel title="Project activity · last 7 days">
               <ActivityChart days={data.activity} />
             </Panel>
-            <Panel title="Upcoming tasks">
+            <Panel title="Upcoming milestones">
               {data.upcoming.length === 0 ? (
                 <Empty>No milestones with due dates yet.</Empty>
               ) : (
                 <ul className="pt-activity">
-                  {data.upcoming.map((t) => (
-                    <li key={t.id}>
-                      <span className={`pt-act-icon ${t.overdue ? 'tm-overdue' : 'pt-act-icon--message'}`}>
+                  {data.upcoming.map((m) => (
+                    <li key={m.id}>
+                      <span className={`pt-act-icon ${m.overdue ? 'tm-overdue' : 'pt-act-icon--message'}`}>
                         <Icon name="check" size={15} />
                       </span>
-                      <Link to={`/team/projects/${t.project_id}`} className="tm-task">
-                        <strong>{t.title}</strong>
+                      <Link to={`/team/projects/${m.project_id}`} className="tm-task">
+                        <strong>{m.title}</strong>
                         <span className="pt-muted">
-                          {t.project} · {t.client} · {t.overdue ? 'Overdue since ' : 'Due '}
-                          {formatDate(t.due_date, false)}
+                          {m.project} · {m.client} · {m.overdue ? 'Overdue since ' : 'Due '}
+                          {formatDate(m.due_date, false)}
                         </span>
                       </Link>
                     </li>
@@ -75,6 +173,37 @@ export function TeamDashboard() {
   )
 }
 
+function DueTasks({ tasks, onDone }: { tasks: Today['my_tasks_due']; onDone: () => void }) {
+  const { busy, run } = useMutation()
+  if (tasks.length === 0) return <Empty>Nothing due today. <Link to="/team/work">See everything on your plate</Link>.</Empty>
+  return (
+    <ul className="tm-prio">
+      {tasks.map((task) => (
+        <li key={task.id} className="tm-prio-task">
+          <input
+            type="checkbox"
+            className="tm-check"
+            aria-label={`Mark “${task.title}” done`}
+            disabled={busy}
+            onChange={async () => {
+              if (await run(`/api/v1/team/tasks/${task.id}/`, { status: 'done' }, 'PATCH')) onDone()
+            }}
+          />
+          <span className="tm-task">
+            <strong>
+              {task.priority === 'high' && <span className="tm-flag" title="High priority" />}
+              {task.title}
+            </strong>
+            <span className="pt-muted pt-small">
+              {[task.project || task.client, task.overdue ? `was due ${formatDate(task.due_date, false)}` : 'due today'].filter(Boolean).join(' · ')}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function Stat({ label, value, note }: { label: string; value: number; note?: string }) {
   return (
     <div className="pt-stat">
@@ -82,14 +211,5 @@ function Stat({ label, value, note }: { label: string; value: number; note?: str
       <span className="pt-stat-value">{value}</span>
       {note && <span className="pt-stat-note">{note}</span>}
     </div>
-  )
-}
-
-function Alert({ to, count, label }: { to: string; count: number; label: string }) {
-  return (
-    <Link to={to} className={`tm-alert${count ? ' tm-alert--on' : ''}`}>
-      <strong>{count}</strong> {label}
-      <Icon name="arrow" size={14} />
-    </Link>
   )
 }

@@ -121,3 +121,82 @@ class Message(models.Model):
     @property
     def from_team(self):
         return self.sender_id != self.client_id
+
+
+class Task(models.Model):
+    """A to-do for someone on the team, optionally about a project or client."""
+
+    class Status(models.TextChoices):
+        TODO = 'todo', 'To do'
+        DOING = 'doing', 'Doing'
+        DONE = 'done', 'Done'
+
+    class Priority(models.TextChoices):
+        LOW = 'low', 'Low'
+        NORMAL = 'normal', 'Normal'
+        HIGH = 'high', 'High'
+
+    title = models.CharField(max_length=200)
+    notes = models.TextField(blank=True, default='')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='client_tasks')
+    assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='created_tasks')
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.TODO, db_index=True)
+    priority = models.CharField(max_length=8, choices=Priority.choices, default=Priority.NORMAL)
+    due_date = models.DateField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['status', models.F('due_date').asc(nulls_last=True), '-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class TimeEntry(models.Model):
+    """Time someone on the team spent on a project."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='time_entries')
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True, related_name='time_entries')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='time_entries')
+    date = models.DateField()
+    minutes = models.PositiveIntegerField()
+    note = models.CharField(max_length=255, blank=True, default='')
+    billable = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name_plural = 'time entries'
+
+    def __str__(self):
+        return f"{self.user} · {self.minutes}m on {self.project.name}"
+
+
+class StaffRate(models.Model):
+    """What an hour of one team member costs the business, for project profitability."""
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='staff_rate')
+    hourly_cost = models.DecimalField(max_digits=10, decimal_places=2, help_text='KES per hour')
+
+    def __str__(self):
+        return f"{self.user} · KES {self.hourly_cost}/h"
+
+
+class ClientNote(models.Model):
+    """An internal note about a client. Clients never see these."""
+
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='team_notes')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='written_client_notes')
+    body = models.TextField()
+    pinned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-pinned', '-created_at']
+
+    def __str__(self):
+        return self.body[:60]

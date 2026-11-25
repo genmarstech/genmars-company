@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from '../components/Link'
+import { navigate } from '../router'
 import { Empty, Loading, Panel, TeamLayout } from '../portal/PortalLayout'
 import { formatDate, useApi } from '../portal/useApi'
 import type { TeamClient } from './types'
@@ -41,9 +42,11 @@ export function Clients() {
               </thead>
               <tbody>
                 {data.map((c) => (
-                  <tr key={c.id}>
+                  <tr key={c.id} className="tm-click" onClick={(e) => (e.target as HTMLElement).closest('a') || navigate(`/team/clients/${c.id}`)}>
                     <td>
-                      <strong>{c.full_name}</strong>
+                      <Link to={`/team/clients/${c.id}`}>
+                        <strong>{c.full_name}</strong>
+                      </Link>
                       <span className="pt-muted pt-small pt-block">{c.email}</span>
                     </td>
                     <td>{c.company_name || '—'}</td>
@@ -53,6 +56,7 @@ export function Clients() {
                     </td>
                     <td>{formatDate(c.date_joined)}</td>
                     <td className="tm-row-actions">
+                      <Link to={`/team/clients/${c.id}`}>Open</Link>
                       <Link to={`/team/projects?client=${c.id}`}>Projects</Link>
                       <Link to={`/team/messages?client=${c.id}`}>Message</Link>
                     </td>

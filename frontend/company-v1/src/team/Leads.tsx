@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Empty, Loading, Panel, StatusBadge, TeamLayout } from '../portal/PortalLayout'
 import { formatDate, useApi } from '../portal/useApi'
-import { useMutation } from './shared'
+import { useMutation, useScrollToHash } from './shared'
 import type { Lead } from './types'
 
 const STATUSES = [
@@ -15,6 +15,7 @@ const STATUSES = [
 export function Leads() {
   const [status, setStatus] = useState('')
   const { data, error, reload } = useApi<Lead[]>(`/api/v1/enquiries/inbox/${status ? `?status=${status}` : ''}`)
+  useScrollToHash(!!data)
 
   return (
     <TeamLayout
@@ -61,7 +62,7 @@ function LeadCard({ lead, onSaved }: { lead: Lead; onSaved: () => void }) {
   }
 
   return (
-    <article className="pt-panel tm-lead">
+    <article className="pt-panel tm-lead" id={`lead-${lead.id}`}>
       <div className="tm-lead-top">
         <div>
           <h2>{lead.full_name}</h2>
