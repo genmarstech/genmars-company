@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { apiFetch } from '../api'
-import { budgetRanges, CONTACT_EMAIL, services } from '../data/site'
+import { budgetRanges, company, CONTACT_EMAIL, services } from '../data/site'
 import { Icon } from './Icon'
 import './ContactSection.css'
 
@@ -73,13 +73,11 @@ export function ContactSection() {
     <section id="contact" className="wrap cs">
       <div className="cs-panel">
         <div className="cs-intro">
-          <span className="eyebrow">Let’s work together</span>
-          <h2 className="cs-title">
-            Have a project <span className="serif">in mind?</span>
-          </h2>
+          <span className="eyebrow">Get a quote</span>
+          <h2 className="cs-title">Tell us about your project.</h2>
           <p className="muted cs-copy">
-            Tell us what you’re building. We reply within one business day with next steps and a time for a free
-            consultation call.
+            A few lines is enough. We reply within one working day, usually with a couple of questions and a time
+            for a free call.
           </p>
           <ul className="cs-promise">
             <li>
@@ -97,10 +95,22 @@ export function ContactSection() {
               <Icon name="mail" strokeWidth={1.8} />
               {CONTACT_EMAIL}
             </a>
+            {company.phone && (
+              <a href={`tel:${company.phone}`}>
+                <Icon name="phone" strokeWidth={1.8} />
+                {company.phone}
+              </a>
+            )}
             <span>
               <Icon name="pin" strokeWidth={1.8} />
-              Nairobi, Kenya · working with teams worldwide
+              {[company.address, company.city].filter(Boolean).join(', ')}
             </span>
+            {company.hours && (
+              <span>
+                <Icon name="clock" strokeWidth={1.8} />
+                {company.hours}
+              </span>
+            )}
           </div>
         </div>
 

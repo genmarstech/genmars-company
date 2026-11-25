@@ -1,0 +1,141 @@
+.ts-section {
+  padding-top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  scroll-margin-top: 80px;
+}
+.ts-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ts-clients {
+  padding-top: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 40px;
+}
+.ts-clients ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 40px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.ts-clients img {
+  height: 32px;
+  width: auto;
+  opacity: 0.8;
+  filter: grayscale(1) brightness(1.6);
+}
+
+.ts-work {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+.ts-case {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ts-meta {
+  font-size: 14px;
+  color: var(--subtle);
+}
+.ts-case h3 {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--white);
+}
+.ts-case dl {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 15px;
+}
+.ts-case dt {
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.ts-case dd {
+  margin: 0;
+  color: var(--muted);
+}
+.ts-tag {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ts-quotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+.ts-quote {
+  margin: 0;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ts-quote blockquote {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--frost);
+}
+.ts-quote figcaption {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: var(--subtle);
+}
+.ts-quote strong {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.ts-team {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 32px;
+}
+.ts-person {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ts-person img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+.ts-person h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+}
+.ts-role {
+  font-size: 14px;
+  color: var(--ice);
+}
+.ts-person p {
+  font-size: 15px;
+}
