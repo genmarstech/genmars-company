@@ -1,3 +1,9 @@
 ./virtual/
 /virtual
 .env
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+staticfiles/
