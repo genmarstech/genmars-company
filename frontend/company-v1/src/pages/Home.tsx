@@ -1,6 +1,7 @@
 import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
+import { ServiceArt } from '../components/ServiceArt'
 import { TrustSections } from '../components/TrustSections'
 import { formatKes, services, whatsappLink } from '../data/site'
 import './Home.css'
@@ -87,19 +88,21 @@ export function Home() {
         </p>
       </section>
 
-      {/* Starting prices */}
-      <section className="wrap hm-prices" aria-labelledby="prices-title">
-        <h2 id="prices-title" className="hm-prices-title">
-          What it costs
-        </h2>
+      {/* Services at a glance */}
+      <section className="wrap hm-glance" aria-label="Services and starting prices">
         <ul>
           {priced.map((s) => (
             <li key={s.slug}>
-              <Link to={`/services#${s.slug}`}>{s.title}</Link>
-              <span>
-                from {formatKes(s.from!)}
-                {s.per && ` / ${s.per}`}
-              </span>
+              <Link to={`/services#${s.slug}`} className="hm-glance-card">
+                <span className="hm-glance-art">
+                  <ServiceArt slug={s.slug} />
+                </span>
+                <span className="hm-glance-name">{s.title}</span>
+                <span className="hm-glance-price">
+                  from {formatKes(s.from!)}
+                  {s.per && ` / ${s.per}`}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
