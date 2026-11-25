@@ -58,7 +58,7 @@
   --line-strong: rgba(20, 40, 90, 0.18);
   --field-bg: #ffffff;
   --card-shadow: 0 1px 2px rgba(15, 30, 70, 0.04), 0 12px 32px -18px rgba(15, 30, 70, 0.18);
-  --header-bg: rgba(245, 248, 255, 0.94);
+  --header-bg: rgba(245, 248, 255, 0.97);
   color-scheme: light;
   color: var(--frost);
   background: var(--midnight);
