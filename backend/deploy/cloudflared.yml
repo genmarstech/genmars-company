@@ -1,0 +1,10 @@
+# Example cloudflared config (usually ~/.cloudflared/config.yml).
+# Create the tunnel first:  cloudflared tunnel create genmars-api
+# Route DNS:                cloudflared tunnel route dns genmars-api api.genmars.co.ke
+tunnel: genmars-api
+credentials-file: /home/YOUR_USER/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: api.genmars.co.ke
+    service: http://127.0.0.1:8080
+  - service: http_status:404

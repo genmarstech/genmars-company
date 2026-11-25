@@ -125,3 +125,32 @@
   color: var(--white);
   border-color: rgba(142, 166, 255, 0.45);
 }
+
+/* Touch screens and narrow cards: details open below the photo instead of over it,
+   so the full list always fits and nothing is clipped. */
+@media (hover: none), (max-width: 640px) {
+  .svc-media {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .svc-media img {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+  .svc-more {
+    position: static;
+    display: none;
+    transform: none;
+    backdrop-filter: none;
+    background: #0a0f1c;
+  }
+  .svc-card--open .svc-more {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+  }
+  .svc-card:focus-within:not(.svc-card--open) .svc-more {
+    display: none;
+  }
+}

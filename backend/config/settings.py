@@ -44,9 +44,6 @@ if not SECRET_KEY:
     SECRET_KEY = 'django-insecure-local-development-only'
 
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1' if DEBUG else '')
-# Render sets this to the service's own hostname, e.g. genmars-api.onrender.com
-if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
-    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
 # The website (Vercel) calls the API on another domain; only its origins may do so.
@@ -116,7 +113,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #     }
 # }
 
-# Render (and most hosts) provide DATABASE_URL; locally we use the DB_* values in .env.
+# A hosted database can be given as DATABASE_URL; otherwise the DB_* values in .env are used.
 if os.getenv('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(conn_max_age=600, conn_health_checks=True, ssl_require=env_bool('DB_SSL_REQUIRE', False)),

@@ -76,6 +76,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   min-height: 100vh;
   background: #f5f8ff;
   overflow-x: hidden;
