@@ -41,8 +41,8 @@ const commitments = [
     text: 'The code, the domain, the hosting accounts and the data are in your name, not ours.',
   },
   {
-    title: 'Built for how Kenya works',
-    text: 'M-Pesa, KRA eTIMS, SMS and WhatsApp are part of the plan from day one, not added later.',
+    title: 'Payments your customers already use',
+    text: 'M-Pesa, card payments, SMS, WhatsApp and tax invoicing are part of the plan from day one, not added later.',
   },
 ]
 
@@ -56,12 +56,12 @@ export function Home() {
       <section id="top" className="hm-hero">
         <div className="hm-hero-bg" aria-hidden="true" />
         <div className="wrap hm-hero-copy">
-          <p className="hm-kicker">Software company in Nairobi, Kenya</p>
+          <p className="hm-kicker">Based in Nairobi, working with businesses everywhere</p>
           <h1 className="h1">
             Websites and business software that <span className="serif">just work.</span>
           </h1>
           <p className="lead hm-lead">
-            We design, build and look after websites, online shops and custom systems for Kenyan businesses. M-Pesa
+            We design, build and look after websites, online shops and custom systems for businesses. M-Pesa
             built in, a fixed price agreed before we start, and a real team to call when you need help.
           </p>
           <div className="hm-ctas">

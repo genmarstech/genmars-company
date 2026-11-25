@@ -15,7 +15,7 @@ export function SiteFooter() {
                 Genmars <span className="sf-tech">TECH</span>
               </span>
             </div>
-            <p>Websites, online shops and business software for Kenyan businesses.</p>
+            <p>Websites, online shops and business software for businesses.</p>
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             {company.phone && <a href={`tel:${company.phone}`}>{company.phone}</a>}
           </div>
