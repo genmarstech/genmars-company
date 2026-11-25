@@ -2,6 +2,7 @@ import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { HeroFlow } from '../components/HeroFlow'
 import { RotatingWords } from '../components/RotatingWords'
 import { ServiceCard } from '../components/ServiceCard'
 import { TrustSections } from '../components/TrustSections'
@@ -56,6 +57,10 @@ export function Home() {
     <>
       {/* Hero */}
       <section id="top" className="hm-hero">
+        {/* faint diagram behind the whole hero, like walking into the system */}
+        <div className="hm-hero-backdrop" aria-hidden="true">
+          <HeroFlow backdrop />
+        </div>
         <div className="wrap hm-hero-copy">
           <h1 className="h1">
             Websites and business software

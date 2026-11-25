@@ -1,6 +1,32 @@
 /* Hero: centered copy on a soft blue wash, with the Nairobi skyline below */
 .hm-hero {
   position: relative;
+  overflow: hidden;
+}
+.hm-hero-copy,
+.hm-hero-photo {
+  z-index: 1;
+}
+/* The connection diagram as a faint floor in perspective behind the copy.
+   Low opacity and a soft fade keep the headline fully readable. */
+.hm-hero-backdrop {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: min(1500px, 140vw);
+  transform: translateX(-50%) perspective(900px) rotateX(38deg) scale(1.05);
+  transform-origin: 50% 0;
+  opacity: 0.11;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 60% 75% at 50% 30%, #000 25%, transparent 78%);
+  mask-image: radial-gradient(ellipse 60% 75% at 50% 30%, #000 25%, transparent 78%);
+}
+@media (max-width: 760px) {
+  .hm-hero-backdrop {
+    top: 40px;
+    width: 260vw;
+    opacity: 0.1;
+  }
 }
 .hm-hero-copy {
   position: relative;
