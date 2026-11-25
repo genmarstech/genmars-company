@@ -52,8 +52,9 @@ export function Home() {
   return (
     <>
       {/* Hero */}
-      <section id="top" className="wrap hm-hero">
-        <div className="hm-hero-copy">
+      <section id="top" className="hm-hero">
+        <div className="hm-hero-bg" aria-hidden="true" />
+        <div className="wrap hm-hero-copy">
           <p className="hm-kicker">Software company in Nairobi, Kenya</p>
           <h1 className="h1">
             Websites and business software that <span className="serif">just work.</span>
@@ -78,24 +79,31 @@ export function Home() {
             )}
           </div>
         </div>
+        <p className="hm-photo-credit">
+          Nairobi at dusk. Photo:{' '}
+          <a href="https://www.pexels.com/photo/stunning-nairobi-skyline-at-dusk-29069329/" target="_blank" rel="noopener noreferrer">
+            Ken Mwaura
+          </a>
+        </p>
+      </section>
 
-        <aside className="hm-prices" aria-labelledby="prices-title">
-          <h2 id="prices-title" className="hm-prices-title">
-            What it costs
-          </h2>
-          <ul>
-            {priced.map((s) => (
-              <li key={s.slug}>
-                <Link to={`/services#${s.slug}`}>{s.title}</Link>
-                <span>
-                  from {formatKes(s.from!)}
-                  {s.per && ` / ${s.per}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p>Starting prices. You get a written, fixed quote after a free first conversation.</p>
-        </aside>
+      {/* Starting prices */}
+      <section className="wrap hm-prices" aria-labelledby="prices-title">
+        <h2 id="prices-title" className="hm-prices-title">
+          What it costs
+        </h2>
+        <ul>
+          {priced.map((s) => (
+            <li key={s.slug}>
+              <Link to={`/services#${s.slug}`}>{s.title}</Link>
+              <span>
+                from {formatKes(s.from!)}
+                {s.per && ` / ${s.per}`}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p>Starting prices. You get a written, fixed quote after a free first conversation.</p>
       </section>
 
       {/* Who we work with */}
