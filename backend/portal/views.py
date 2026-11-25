@@ -4,6 +4,9 @@ from django.db.models import Sum
 from rest_framework import mixins, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from applications_communications.models import Enquiry
+from applications_communications.notifications import notify_new_enquiry
+from applications_communications.serializers import PortalRequestSerializer
 from .models import Invoice, Message, Milestone, Project
 from .serializers import InvoiceSerializer, MessageSerializer, ProjectDetailSerializer, ProjectSerializer
 
@@ -85,3 +88,22 @@ class MessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.Ge
             recipient_list=[settings.ENQUIRY_NOTIFY_EMAIL],
             fail_silently=True,
         )
+
+
+class ProjectRequestViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """New project requests a signed-in client sends from their portal. They land in the team's leads."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PortalRequestSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return Enquiry.objects.filter(client=self.request.user)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        enquiry = serializer.save(
+            client=user, full_name=user.full_name, email=user.email,
+            phone_number=user.phone_number, source=Enquiry.Source.PORTAL,
+        )
+        notify_new_enquiry(enquiry)

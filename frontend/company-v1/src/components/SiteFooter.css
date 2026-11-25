@@ -155,3 +155,9 @@
     margin-left: 0;
   }
 }
+
+.sf-legal {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}

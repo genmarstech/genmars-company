@@ -11,6 +11,7 @@ const links = [
   { to: '/services', label: 'Services' },
   ...(caseStudies.length ? [{ to: '/#work', label: 'Our work' }] : []),
   { to: '/how-we-work', label: 'How we work' },
+  { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
 ]
 
