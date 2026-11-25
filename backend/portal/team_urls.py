@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 from .team import (
     TeamClientViewSet, TeamInvoiceViewSet, TeamLinkViewSet, TeamMessageViewSet, TeamMilestoneViewSet,
-    TeamFinanceView, TeamProjectViewSet, TeamSummaryView, TeamThreadsView,
+    TeamBrandFileView, TeamFinanceView, TeamProjectViewSet, TeamSummaryView, TeamThreadsView,
 )
 
 router = SimpleRouter()
@@ -17,5 +17,6 @@ urlpatterns = [
     path("summary/", TeamSummaryView.as_view(), name='team-summary'),
     path("threads/", TeamThreadsView.as_view(), name='team-threads'),
     path("finance/", TeamFinanceView.as_view(), name='team-finance'),
+    path("brand/<path:path>", TeamBrandFileView.as_view(), name='team-brand-file'),
     path("", include(router.urls)),
 ]

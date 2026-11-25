@@ -5,7 +5,7 @@ import { Link } from '../components/Link'
 import { navigate, usePathname } from '../router'
 import './portal.css'
 
-type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' }
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' }
 
 const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
@@ -25,6 +25,7 @@ const teamNav: NavItem[] = [
   { to: '/team/finance', label: 'Finance', icon: 'chart' },
   { to: '/team/invoices', label: 'Invoices', icon: 'card' },
   { to: '/team/messages', label: 'Messages', icon: 'chat' },
+  { to: '/team/brand', label: 'Brand kit', icon: 'pen' },
 ]
 
 export function PortalLayout({ title, subtitle, actions, children, nav = clientNav, role = 'Client' }: {

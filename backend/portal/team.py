@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.http import FileResponse, Http404
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db.models import Count, F, Q
@@ -213,6 +214,22 @@ class TeamFinanceView(APIView):
                 for inv in overdue.order_by('due_on')[:8]
             ],
         })
+
+
+BRAND_KIT_DIR = (settings.BASE_DIR / 'brand_kit').resolve()
+
+
+class TeamBrandFileView(APIView):
+    """Brand kit files (logos, social images, fonts, guidelines) for the team only."""
+
+    permission_classes = [Staff]
+
+    def get(self, request, path):
+        target = (BRAND_KIT_DIR / path).resolve()
+        # refuse anything outside the brand kit folder, e.g. ../ tricks
+        if BRAND_KIT_DIR not in target.parents or not target.is_file():
+            raise Http404
+        return FileResponse(open(target, 'rb'), as_attachment=request.query_params.get('download') == '1', filename=target.name)
 
 
 class TeamThreadsView(APIView):

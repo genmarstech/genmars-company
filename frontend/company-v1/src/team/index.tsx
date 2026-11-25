@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSession } from '../auth/session'
 import { navigate } from '../router'
+import { BrandKit } from './BrandKit'
 import { Clients } from './Clients'
 import { FinancePage } from './Finance'
 import { Pipeline } from './Pipeline'
@@ -33,6 +34,8 @@ export function Team({ path }: { path: string }) {
       return <Leads />
     case '/team/pipeline':
       return <Pipeline />
+    case '/team/brand':
+      return <BrandKit />
     case '/team/finance':
       return <FinancePage />
     case '/team/invoices':

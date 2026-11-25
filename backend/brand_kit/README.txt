@@ -1,5 +1,5 @@
 GENMARS TECH BRAND KIT
-https://genmars.co.ke/brand
+Team dashboard > Brand kit (staff only)
 
 logos/    Full logo, stacked logo and mark. SVG (any size, text outlined) and transparent PNG.
           -white versions are for dark or photo backgrounds; -black for one-colour print.

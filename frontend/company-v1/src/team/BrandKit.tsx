@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
-import './Brand.css'
-
-const B = '/brand'
+import { TeamLayout } from '../portal/PortalLayout'
+import { AuthImg, DownloadLink } from './brandFiles'
+import './BrandKit.css'
 
 const logos = [
   { name: 'Full logo', file: 'genmars-logo', bg: 'light', use: 'Default. Websites, documents, light backgrounds.' },
@@ -49,42 +49,36 @@ const type = [
 
 const spacing = [4, 8, 12, 16, 24, 32, 48, 64, 96]
 
-export function Brand() {
+export function BrandKit() {
   return (
+    <TeamLayout title="Brand kit" subtitle="Logos, colours, fonts and social images for the team. Not shared on the public site.">
     <div className="bk">
-      <section className="wrap bk-hero">
-        <span className="eyebrow eyebrow--line">Brand kit</span>
-        <h1>The Genmars brand, ready to share.</h1>
-        <p className="lead">
-          Logos, colours, fonts and social images, with simple rules for using them. Everything here matches the website.
-        </p>
-        <div className="bk-actions">
-          <a className="btn btn--lg" href={`${B}/genmars-brand-kit.zip`} download>
-            Download everything (.zip)
-          </a>
-          <a className="btn btn--lg btn--ghost" href={`${B}/genmars-brand-guidelines.pdf`} download>
-            Guidelines (PDF)
-          </a>
-        </div>
-      </section>
+      <div className="bk-actions">
+        <DownloadLink className="btn" path="genmars-brand-kit.zip">
+          Download everything (.zip)
+        </DownloadLink>
+        <DownloadLink className="btn btn--ghost" path="genmars-brand-guidelines.pdf">
+          Guidelines (PDF)
+        </DownloadLink>
+      </div>
 
       <Section id="logo" title="Logo" intro="Use the full logo wherever there’s room, and the mark on its own for small spaces.">
         <div className="bk-logos">
           {logos.map((l) => (
             <article key={l.file} className="card bk-logo">
               <div className={`bk-logo-preview bk-bg-${l.bg}`}>
-                <img src={`${B}/logos/${l.file}.svg`} alt={l.name} />
+                <AuthImg path={`logos/${l.file}.svg`} alt={l.name} />
               </div>
               <div className="bk-logo-meta">
                 <h3>{l.name}</h3>
                 <p className="muted">{l.use}</p>
                 <div className="bk-dl">
-                  <a href={`${B}/logos/${l.file}.svg`} download>
+                  <DownloadLink path={`logos/${l.file}.svg`}>
                     SVG
-                  </a>
-                  <a href={`${B}/logos/${l.file}.png`} download>
+                  </DownloadLink>
+                  <DownloadLink path={`logos/${l.file}.png`}>
                     PNG
-                  </a>
+                  </DownloadLink>
                 </div>
               </div>
             </article>
@@ -94,15 +88,15 @@ export function Brand() {
           <div className="card bk-rule">
             <h3>Clear space</h3>
             <div className="bk-clear">
-              <img src={`${B}/logos/genmars-logo.svg`} alt="" />
+              <AuthImg path={`logos/genmars-logo.svg`} alt="" />
             </div>
             <p className="muted">Keep empty space around the logo at least half the height of the mark on every side.</p>
           </div>
           <div className="card bk-rule">
             <h3>Minimum size</h3>
             <div className="bk-min">
-              <img src={`${B}/logos/genmars-logo.svg`} alt="" style={{ height: 24 }} />
-              <img src={`${B}/logos/genmars-mark.svg`} alt="" style={{ height: 20 }} />
+              <AuthImg path={`logos/genmars-logo.svg`} alt="" style={{ height: 24 }} />
+              <AuthImg path={`logos/genmars-mark.svg`} alt="" style={{ height: 20 }} />
             </div>
             <p className="muted">Full logo at least 120px (30mm) wide. The mark on its own at least 20px (5mm).</p>
           </div>
@@ -218,9 +212,9 @@ export function Brand() {
         <div className="bk-social">
           {social.map((s) => (
             <article key={s.file} className="card bk-social-item">
-              <a className="bk-social-preview" href={`${B}/social/${s.file}.png`} download>
-                <img src={`${B}/social/${s.file}.png`} alt={`${s.name} preview`} loading="lazy" />
-              </a>
+              <DownloadLink className="bk-social-preview" path={`social/${s.file}.png`}>
+                <AuthImg path={`social/${s.file}.png`} alt={`${s.name} preview`} loading="lazy" />
+              </DownloadLink>
               <div className="bk-social-meta">
                 <span>
                   <strong>{s.name}</strong>
@@ -228,21 +222,22 @@ export function Brand() {
                     {s.size} · {s.where}
                   </span>
                 </span>
-                <a className="btn btn--sm btn--ghost" href={`${B}/social/${s.file}.png`} download>
+                <DownloadLink className="btn btn--sm btn--ghost" path={`social/${s.file}.png`}>
                   Download
-                </a>
+                </DownloadLink>
               </div>
             </article>
           ))}
         </div>
       </Section>
     </div>
+    </TeamLayout>
   )
 }
 
 function Section({ id, title, intro, children }: { id: string; title: string; intro: string; children: ReactNode }) {
   return (
-    <section id={id} className="wrap bk-section">
+    <section id={id} className="bk-section">
       <div className="bk-head">
         <h2 className="h2">{title}</h2>
         <p className="muted">{intro}</p>
@@ -284,13 +279,13 @@ function FontCard({ name, use, files, licence, serif, mono }: { name: string; us
       <p className="muted">{use}</p>
       <div className="bk-dl">
         {files.map((f) => (
-          <a key={f} href={`${B}/fonts/${f}.ttf`} download>
+          <DownloadLink key={f} path={`fonts/${f}.ttf`}>
             {f.replace(/^.*-/, '')}
-          </a>
+          </DownloadLink>
         ))}
-        <a href={`${B}/fonts/${licence}`} download>
+        <DownloadLink path={`fonts/${licence}`}>
           Licence
-        </a>
+        </DownloadLink>
       </div>
     </article>
   )
