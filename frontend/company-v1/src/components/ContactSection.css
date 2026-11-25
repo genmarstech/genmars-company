@@ -115,3 +115,14 @@
   align-items: center;
   justify-content: center;
 }
+.cs-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.cs-sent strong {
+  color: var(--white);
+  font-weight: 500;
+}

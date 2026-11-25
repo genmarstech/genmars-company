@@ -11,6 +11,8 @@ export type IconName =
 export type Service = {
   n: string
   slug: string
+  /** Matches Enquiry.Service on the backend. */
+  apiValue: string
   icon: IconName
   title: string
   short: string
@@ -28,6 +30,7 @@ export const services: Service[] = [
   {
     n: '01',
     slug: 'custom-software',
+    apiValue: 'custom_software',
     icon: 'code',
     title: 'Custom Software Development',
     short: 'Custom software',
@@ -39,6 +42,7 @@ export const services: Service[] = [
   {
     n: '02',
     slug: 'websites',
+    apiValue: 'website',
     icon: 'globe',
     title: 'Website Design & Development',
     short: 'Website',
@@ -50,6 +54,7 @@ export const services: Service[] = [
   {
     n: '03',
     slug: 'e-commerce',
+    apiValue: 'ecommerce',
     icon: 'cart',
     title: 'E-commerce Stores',
     short: 'E-commerce store',
@@ -61,6 +66,7 @@ export const services: Service[] = [
   {
     n: '04',
     slug: 'automation',
+    apiValue: 'automation',
     icon: 'flow',
     title: 'Business Automation',
     short: 'Business automation',
@@ -72,6 +78,7 @@ export const services: Service[] = [
   {
     n: '05',
     slug: 'ui-ux',
+    apiValue: 'ui_ux',
     icon: 'pen',
     title: 'UI/UX Design',
     short: 'UI/UX design',
@@ -83,6 +90,7 @@ export const services: Service[] = [
   {
     n: '06',
     slug: 'cloud',
+    apiValue: 'cloud',
     icon: 'cloud',
     title: 'Cloud Infrastructure & Deployment',
     short: 'Cloud & deployment',
@@ -94,6 +102,7 @@ export const services: Service[] = [
   {
     n: '07',
     slug: 'maintenance',
+    apiValue: 'maintenance',
     icon: 'shield',
     title: 'Maintenance & Support',
     short: 'Maintenance & support',
@@ -105,13 +114,16 @@ export const services: Service[] = [
   },
 ]
 
+// Values match Enquiry.Budget on the backend.
 export const budgetRanges = [
-  'Under KES 50,000',
-  'KES 50,000 – 150,000',
-  'KES 150,000 – 500,000',
-  'KES 500,000+',
-  'Not sure yet',
+  { value: 'under_50k', label: 'Under KES 50,000' },
+  { value: '50k_150k', label: 'KES 50,000 – 150,000' },
+  { value: '150k_500k', label: 'KES 150,000 – 500,000' },
+  { value: 'over_500k', label: 'KES 500,000+' },
+  { value: 'unsure', label: 'Not sure yet' },
 ]
+
+export const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 export function formatKes(amount: number) {
   return `KES ${amount.toLocaleString('en-KE')}`
