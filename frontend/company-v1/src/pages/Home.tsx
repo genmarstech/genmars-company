@@ -2,6 +2,7 @@ import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { ServiceCard } from '../components/ServiceCard'
 import { TrustSections } from '../components/TrustSections'
 import { formatKes, services, whatsappLink } from '../data/site'
 import './Home.css'
@@ -137,17 +138,7 @@ export function Home() {
 
         <div className="hm-svc">
           {services.map((s) => (
-            <article key={s.slug} className="card hm-svc-card">
-              <h3 className="hm-svc-title">{s.title}</h3>
-              <p className="muted">{s.desc}</p>
-              <div className="hm-svc-foot">
-                <span className="hm-price">
-                  {s.from === null ? 'Quoted per project' : `From ${formatKes(s.from)}`}
-                  {s.per && <span className="hm-per"> / {s.per}</span>}
-                </span>
-                <span className="hm-time">{s.timeline}</span>
-              </div>
-            </article>
+            <ServiceCard key={s.slug} service={s} />
           ))}
           <article className="hm-svc-card hm-svc-cta">
             <h3 className="hm-svc-title">Not sure what you need?</h3>
