@@ -8,6 +8,7 @@ import { HowWeWork } from './pages/HowWeWork'
 import { Services } from './pages/Services'
 import { Onboarding } from './pages/Onboarding'
 import { Portal } from './portal'
+import { Team } from './team'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignUpPage } from './auth/pages'
 import { navigate, usePathname } from './router'
 
@@ -31,7 +32,9 @@ function App() {
   const Page = route?.page ?? NotFound
 
   useEffect(() => {
-    document.title = path.startsWith('/portal')
+    document.title = path.startsWith('/team')
+      ? 'Team · Genmars Tech'
+      : path.startsWith('/portal')
       ? 'Client portal · Genmars Tech'
       : (route?.title ?? 'Page not found · Genmars Tech')
   }, [route, path])
@@ -45,6 +48,14 @@ function App() {
     // the old account page now lives in the client portal
     if (path === '/account') navigate('/portal')
   }, [path])
+
+  if (path === '/team' || path.startsWith('/team/')) {
+    return (
+      <div className="site theme-light">
+        <Team path={path} />
+      </div>
+    )
+  }
 
   if (path === '/portal' || path.startsWith('/portal/')) {
     return (

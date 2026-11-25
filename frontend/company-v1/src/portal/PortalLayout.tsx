@@ -5,19 +5,32 @@ import { Link } from '../components/Link'
 import { navigate, usePathname } from '../router'
 import './portal.css'
 
-const nav = [
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' }
+
+const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
   { to: '/portal/projects', label: 'Projects', icon: 'code' },
   { to: '/portal/invoices', label: 'Invoices', icon: 'card' },
   { to: '/portal/messages', label: 'Messages', icon: 'chat' },
   { to: '/portal/settings', label: 'Settings', icon: 'gear' },
-] as const
+]
 
-export function PortalLayout({ title, subtitle, actions, children }: {
+const teamNav: NavItem[] = [
+  { to: '/team', label: 'Dashboard', icon: 'layout' },
+  { to: '/team/clients', label: 'Clients', icon: 'team' },
+  { to: '/team/projects', label: 'Projects', icon: 'code' },
+  { to: '/team/leads', label: 'Leads', icon: 'mail' },
+  { to: '/team/invoices', label: 'Invoices', icon: 'card' },
+  { to: '/team/messages', label: 'Messages', icon: 'chat' },
+]
+
+export function PortalLayout({ title, subtitle, actions, children, nav = clientNav, role = 'Client' }: {
   title: string
   subtitle?: string
   actions?: ReactNode
   children: ReactNode
+  nav?: NavItem[]
+  role?: string
 }) {
   const { user } = useSession()
   const path = usePathname()
@@ -29,7 +42,8 @@ export function PortalLayout({ title, subtitle, actions, children }: {
     .join('')
     .toUpperCase()
 
-  const isActive = (to: string) => (to === '/portal' ? path === '/portal' : path.startsWith(to))
+  const home = nav[0].to
+  const isActive = (to: string) => (to === home ? path === home : path.startsWith(to))
 
   return (
     <div className={`pt${menuOpen ? ' pt--menu' : ''}`}>
@@ -41,7 +55,7 @@ export function PortalLayout({ title, subtitle, actions, children }: {
             <span className="pt-tech">TECH</span>
           </span>
         </Link>
-        <nav aria-label="Portal" className="pt-nav">
+        <nav aria-label={role === 'Client' ? 'Portal' : 'Team'} className="pt-nav">
           {nav.map((n) => (
             <Link
               key={n.to}
@@ -61,7 +75,7 @@ export function PortalLayout({ title, subtitle, actions, children }: {
           </span>
           <span className="pt-user-text">
             <strong>{user?.full_name}</strong>
-            <span>Client</span>
+            <span>{role}</span>
           </span>
           <button
             type="button"
@@ -101,6 +115,10 @@ export function PortalLayout({ title, subtitle, actions, children }: {
       </div>
     </div>
   )
+}
+
+export function TeamLayout(props: { title: string; subtitle?: string; actions?: ReactNode; children: ReactNode }) {
+  return <PortalLayout {...props} nav={teamNav} role="Genmars team" />
 }
 
 export function Panel({ title, action, children, className = '' }: {
