@@ -1,0 +1,55 @@
+# Render Blueprint: Django API + Postgres for Genmars Tech.
+# Render dashboard → New → Blueprint → pick this repo.
+databases:
+  - name: genmars-db
+    plan: free
+    region: frankfurt
+    databaseName: genmars_tech_db
+    user: genmars_user
+
+services:
+  - type: web
+    name: genmars-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: ./build.sh
+    # Free instances have no pre-deploy step, so migrations run on start.
+    startCommand: >-
+      python manage.py migrate --no-input &&
+      (python manage.py createsuperuser --no-input || true) &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DATABASE_URL
+        fromDatabase:
+          name: genmars-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://company-v1-gamma.vercel.app
+      - key: ENQUIRY_NOTIFY_EMAIL
+        value: info@genmars.co.ke
+      - key: DEFAULT_FROM_EMAIL
+        value: Genmars Tech <info@genmars.co.ke>
+      # Set these in the dashboard (they are secrets):
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: DJANGO_SUPERUSER_FULL_NAME
+        sync: false
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
