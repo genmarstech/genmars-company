@@ -123,8 +123,6 @@ export const budgetRanges = [
   { value: 'unsure', label: 'Not sure yet' },
 ]
 
-export const API_URL = import.meta.env.VITE_API_URL ?? ''
-
 export function formatKes(amount: number) {
   return `KES ${amount.toLocaleString('en-KE')}`
 }

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { API_URL, budgetRanges, CONTACT_EMAIL, services } from '../data/site'
+import { apiFetch } from '../api'
+import { budgetRanges, CONTACT_EMAIL, services } from '../data/site'
 import { Icon } from './Icon'
 import './ContactSection.css'
 
@@ -38,7 +39,7 @@ export function ContactSection() {
 
     setSending(true)
     try {
-      const res = await fetch(`${API_URL}/api/v1/enquiries/`, {
+      const res = await apiFetch('/api/v1/enquiries/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(brief),
