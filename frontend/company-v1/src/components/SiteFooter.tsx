@@ -58,6 +58,7 @@ export function SiteFooter() {
               <Link to="/about">About</Link>
               <Link to="/how-we-work">How we work</Link>
               <Link to="/products">Products</Link>
+              <Link to="/brand">Brand kit</Link>
               <Link to="/services#faq">Questions</Link>
               <Link to="/contact">Contact</Link>
             </div>

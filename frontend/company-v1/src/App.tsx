@@ -4,6 +4,7 @@ import { SiteHeader } from './components/SiteHeader'
 import { Home } from './pages/Home'
 import { NotFound } from './pages/NotFound'
 import { About } from './pages/About'
+import { Brand } from './pages/Brand'
 import { Contact } from './pages/Contact'
 import { Privacy, Terms } from './pages/Legal'
 import { Products } from './pages/Products'
@@ -24,6 +25,7 @@ const routes: Record<string, Route> = {
   '/contact': { title: 'Contact us · Genmars Tech', page: Contact },
   '/about': { title: 'About us · Genmars Tech', page: About },
   '/products': { title: 'Products · Genmars Labs', page: Products },
+  '/brand': { title: 'Brand kit · Genmars Tech', page: Brand },
   '/privacy': { title: 'Privacy policy · Genmars Tech', page: Privacy },
   '/terms': { title: 'Terms of service · Genmars Tech', page: Terms },
   '/login': { title: 'Sign in · Genmars Tech', page: LoginPage, bare: true },
