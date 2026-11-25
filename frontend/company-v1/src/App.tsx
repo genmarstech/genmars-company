@@ -1,0 +1,42 @@
+import { useEffect } from 'react'
+import { SiteFooter } from './components/SiteFooter'
+import { SiteHeader } from './components/SiteHeader'
+import { Home } from './pages/Home'
+import { NotFound } from './pages/NotFound'
+import { Services } from './pages/Services'
+import { usePathname } from './router'
+
+const routes: Record<string, { title: string; page: () => React.JSX.Element }> = {
+  '/': { title: 'Genmars Tech · Software studio in Kenya', page: Home },
+  '/services': { title: 'Services & pricing · Genmars Tech', page: Services },
+}
+
+function App() {
+  const path = usePathname().replace(/\/+$/, '') || '/'
+  const route = routes[path]
+  const Page = route?.page ?? NotFound
+
+  useEffect(() => {
+    document.title = route?.title ?? 'Page not found · Genmars Tech'
+  }, [route])
+
+  useEffect(() => {
+    const id = window.location.hash.slice(1)
+    if (id) document.getElementById(id)?.scrollIntoView()
+  }, [])
+
+  return (
+    <div className="site">
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      <SiteHeader />
+      <main id="main">
+        <Page />
+      </main>
+      <SiteFooter />
+    </div>
+  )
+}
+
+export default App
