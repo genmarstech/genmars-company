@@ -7,7 +7,7 @@ import { Services } from './pages/Services'
 import { usePathname } from './router'
 
 const routes: Record<string, { title: string; page: () => React.JSX.Element }> = {
-  '/': { title: 'Genmars Tech · Software studio in Kenya', page: Home },
+  '/': { title: 'Genmars Tech · Websites and business software', page: Home },
   '/services': { title: 'Services & pricing · Genmars Tech', page: Services },
 }
 

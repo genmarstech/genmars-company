@@ -2,6 +2,7 @@ import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { ServiceCard } from '../components/ServiceCard'
 import { TrustSections } from '../components/TrustSections'
 import { formatKes, services, whatsappLink } from '../data/site'
 import './Home.css'
@@ -41,8 +42,8 @@ const commitments = [
     text: 'The code, the domain, the hosting accounts and the data are in your name, not ours.',
   },
   {
-    title: 'Built for how Kenya works',
-    text: 'M-Pesa, KRA eTIMS, SMS and WhatsApp are part of the plan from day one, not added later.',
+    title: 'Payments your customers already use',
+    text: 'M-Pesa, card payments, SMS, WhatsApp and tax invoicing are part of the plan from day one, not added later.',
   },
 ]
 
@@ -56,12 +57,12 @@ export function Home() {
       <section id="top" className="hm-hero">
         <div className="hm-hero-bg" aria-hidden="true" />
         <div className="wrap hm-hero-copy">
-          <p className="hm-kicker">Software company in Nairobi, Kenya</p>
+          <p className="hm-kicker">Based in Nairobi, working with businesses everywhere</p>
           <h1 className="h1">
             Websites and business software that <span className="serif">just work.</span>
           </h1>
           <p className="lead hm-lead">
-            We design, build and look after websites, online shops and custom systems for Kenyan businesses. M-Pesa
+            We design, build and look after websites, online shops and custom systems for businesses. M-Pesa
             built in, a fixed price agreed before we start, and a real team to call when you need help.
           </p>
           <div className="hm-ctas">
@@ -137,17 +138,7 @@ export function Home() {
 
         <div className="hm-svc">
           {services.map((s) => (
-            <article key={s.slug} className="card hm-svc-card">
-              <h3 className="hm-svc-title">{s.title}</h3>
-              <p className="muted">{s.desc}</p>
-              <div className="hm-svc-foot">
-                <span className="hm-price">
-                  {s.from === null ? 'Quoted per project' : `From ${formatKes(s.from)}`}
-                  {s.per && <span className="hm-per"> / {s.per}</span>}
-                </span>
-                <span className="hm-time">{s.timeline}</span>
-              </div>
-            </article>
+            <ServiceCard key={s.slug} service={s} />
           ))}
           <article className="hm-svc-card hm-svc-cta">
             <h3 className="hm-svc-title">Not sure what you need?</h3>
