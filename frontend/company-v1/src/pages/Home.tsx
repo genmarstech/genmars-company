@@ -99,14 +99,23 @@ export function Home() {
                 <span className="hm-glance-art">
                   <ServiceArt slug={s.slug} />
                 </span>
-                <span className="hm-glance-name">{s.title}</span>
-                <span className="hm-glance-price">
-                  from {formatKes(s.from!)}
-                  {s.per && ` / ${s.per}`}
+                <span className="hm-glance-text">
+                  <span className="hm-glance-name">{s.title}</span>
+                  <span className="hm-glance-price">
+                    from {formatKes(s.from!)}
+                    {s.per && ` / ${s.per}`}
+                  </span>
                 </span>
               </Link>
             </li>
           ))}
+          <li>
+            <Link to="/services" className="hm-glance-card hm-glance-all">
+              <span>
+                Compare all services <Icon name="arrow" size={16} />
+              </span>
+            </Link>
+          </li>
         </ul>
         <p>Starting prices. You get a written, fixed quote after a free first conversation.</p>
       </section>

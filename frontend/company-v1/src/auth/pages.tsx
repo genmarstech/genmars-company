@@ -68,8 +68,9 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back!"
-      subtitle="Sign in to your account"
+      title="Welcome back"
+      subtitle="Sign in to your Genmars account"
+      social
       footer={
         <>
           Don’t have an account? <Link to="/signup">Create account</Link>
@@ -116,6 +117,7 @@ export function SignUpPage() {
     <AuthLayout
       title="Create your account"
       subtitle="Start building with Genmars today."
+      social
       footer={
         <>
           Already have an account? <Link to="/login">Sign in</Link>
