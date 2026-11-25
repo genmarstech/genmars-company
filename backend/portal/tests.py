@@ -193,3 +193,28 @@ class ProjectRequestAndFinanceTests(APITestCase):
     def test_finance_is_staff_only(self):
         self.client.force_authenticate(self.alice)
         self.assertEqual(self.client.get('/api/v1/team/finance/').status_code, status.HTTP_403_FORBIDDEN)
+
+
+class BrandKitTests(APITestCase):
+
+    def setUp(self):
+        self.client_user = User.objects.create_user(email='alice@example.com', password='S3cure-pass-123', full_name='Alice W')
+        self.staff = User.objects.create_user(email='edwin@example.com', password='S3cure-pass-123', full_name='Edwin M', is_staff=True)
+
+    def test_staff_can_download_brand_files(self):
+        self.client.force_authenticate(self.staff)
+        response = self.client.get('/api/v1/team/brand/logos/genmars-logo.svg?download=1')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('attachment', response['Content-Disposition'])
+        self.assertEqual(self.client.get('/api/v1/team/brand/genmars-brand-kit.zip').status_code, status.HTTP_200_OK)
+
+    def test_clients_and_visitors_cannot(self):
+        self.assertEqual(self.client.get('/api/v1/team/brand/logos/genmars-logo.svg').status_code, status.HTTP_401_UNAUTHORIZED)
+        self.client.force_authenticate(self.client_user)
+        self.assertEqual(self.client.get('/api/v1/team/brand/logos/genmars-logo.svg').status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_no_files_outside_the_kit(self):
+        self.client.force_authenticate(self.staff)
+        self.assertEqual(self.client.get('/api/v1/team/brand/../config/settings.py').status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.client.get('/api/v1/team/brand/..%2F.env').status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.client.get('/api/v1/team/brand/missing.png').status_code, status.HTTP_404_NOT_FOUND)
