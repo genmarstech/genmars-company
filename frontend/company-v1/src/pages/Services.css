@@ -236,12 +236,67 @@
   text-align: left;
   cursor: pointer;
 }
-.sv-faq-item button span {
-  flex: none;
-  font-size: 22px;
-  color: var(--ice);
+.sv-faq-item button {
+  transition: color 0.15s ease;
 }
-.sv-faq-item p {
+.sv-faq-item button:hover {
+  color: var(--cobalt);
+}
+/* plus that turns into a minus */
+.sv-faq-icon {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.sv-faq-icon::before,
+.sv-faq-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  margin: -1px 0 0 -6px;
+  border-radius: 2px;
+  background: var(--cobalt);
+  transition: transform 0.25s ease, background-color 0.2s ease;
+}
+.sv-faq-icon::after {
+  transform: rotate(90deg);
+}
+.sv-faq-item button:hover .sv-faq-icon {
+  border-color: var(--cobalt);
+}
+.is-open .sv-faq-icon {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+}
+.is-open .sv-faq-icon::before,
+.is-open .sv-faq-icon::after {
+  background: #ffffff;
+}
+.is-open .sv-faq-icon::after {
+  transform: rotate(0deg);
+}
+/* answer opens to its natural height */
+.sv-faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.28s ease, opacity 0.2s ease;
+}
+.sv-faq-answer > div {
+  overflow: hidden;
+}
+.is-open .sv-faq-answer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.sv-faq-answer p {
   padding: 0 0 22px;
   max-width: 680px;
 }
