@@ -2,6 +2,7 @@ import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { HeroFlow } from '../components/HeroFlow'
 import { RotatingWords } from '../components/RotatingWords'
 import { ServiceCard } from '../components/ServiceCard'
 import { TrustSections } from '../components/TrustSections'
@@ -85,15 +86,9 @@ export function Home() {
             )}
           </div>
         </div>
-        <figure className="wrap hm-hero-photo">
-          <img src="/hero-nairobi.jpg" alt="Nairobi skyline at dusk" width={2400} height={1600} />
-          <figcaption>
-            Nairobi at dusk. Photo:{' '}
-            <a href="https://www.pexels.com/photo/stunning-nairobi-skyline-at-dusk-29069329/" target="_blank" rel="noopener noreferrer">
-              Ken Mwaura
-            </a>
-          </figcaption>
-        </figure>
+        <div className="wrap hm-hero-flow">
+          <HeroFlow />
+        </div>
       </section>
 
       {/* Services at a glance */}
