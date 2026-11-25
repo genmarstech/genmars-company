@@ -1,82 +1,126 @@
-/* Hero */
+/* Hero: centered copy over a Nairobi skyline photo */
 .hm-hero {
-  padding-top: 80px;
-  padding-bottom: 88px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 56px 72px;
-}
-.hm-hero-copy {
-  flex: 1 1 540px;
-  min-width: 0;
+  position: relative;
+  margin-top: -81px;
+  min-height: min(860px, 100svh);
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.hm-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(5, 7, 13, 0.82) 0%, rgba(5, 7, 13, 0.55) 40%, rgba(5, 7, 13, 0.7) 75%, var(--midnight) 100%),
+    url('/hero-nairobi.jpg') center 65% / cover no-repeat;
+}
+@media (max-width: 900px) {
+  .hm-hero-bg {
+    background:
+      linear-gradient(180deg, rgba(5, 7, 13, 0.85) 0%, rgba(5, 7, 13, 0.6) 45%, rgba(5, 7, 13, 0.8) 80%, var(--midnight) 100%),
+      url('/hero-nairobi-sm.jpg') 40% 70% / cover no-repeat;
+  }
+}
+.hm-hero-copy {
+  position: relative;
+  padding-top: 160px;
+  padding-bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 28px;
 }
 .hm-kicker {
   font-size: 15px;
   font-weight: 500;
   color: var(--ice);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
 }
 .hm-hero .h1 {
-  font-size: clamp(42px, 5.6vw, 72px);
-  line-height: 1.04;
-  letter-spacing: -0.035em;
+  max-width: 940px;
+  font-size: clamp(42px, 6.4vw, 84px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.45);
 }
 .hm-lead {
-  max-width: 580px;
+  max-width: 640px;
+  color: var(--text-2);
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.6);
 }
 .hm-ctas {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
+.hm-ctas .btn--ghost {
+  background: rgba(5, 7, 13, 0.45);
+  backdrop-filter: blur(6px);
+}
+.hm-photo-credit {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.hm-photo-credit a {
+  color: var(--subtle);
+}
 
-/* Starting prices panel */
+/* Starting prices band */
 .hm-prices {
-  flex: 1 1 360px;
-  max-width: 460px;
-  padding: 28px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--line);
-  background: var(--surface);
+  padding-top: 24px;
+  padding-bottom: 72px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
 }
 .hm-prices-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--white);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ice);
 }
 .hm-prices ul {
   list-style: none;
   margin: 0;
   padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
 }
 .hm-prices li {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  font-size: 15px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 0 -1px -1px 0;
+  background: var(--surface);
 }
 .hm-prices li a {
-  color: var(--frost);
+  font-weight: 500;
+  color: var(--white);
 }
 .hm-prices li a:hover {
   color: var(--ice);
 }
 .hm-prices li span {
-  flex: none;
+  font-size: 14px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .hm-prices p {
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--subtle);
 }
 
@@ -91,6 +135,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 12px 28px;
 }
 .hm-strip-label {
@@ -100,6 +145,7 @@
 .hm-sectors {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -111,28 +157,21 @@
   gap: 48px;
   scroll-margin-top: 80px;
 }
-.hm-head {
+.hm-head,
+.hm-head-main {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 14px;
-  max-width: 720px;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
 }
 .hm-head--split {
-  max-width: none;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px 64px;
-}
-.hm-head-main {
-  flex: 1 1 520px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 .hm-head-aside {
-  flex: 0 1 380px;
+  max-width: 560px;
   font-size: 17px;
   color: var(--muted);
 }
@@ -234,34 +273,33 @@
   gap: 48px 96px;
 }
 .hm-about-head {
-  flex: 1 1 380px;
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
+  text-align: center;
 }
 .hm-about-head p {
   font-size: 17px;
-  max-width: 460px;
+  max-width: 560px;
 }
 .hm-principles {
-  flex: 1 1 440px;
+  flex: 1 1 100%;
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-.hm-principles li {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
-.hm-principles li:first-child {
-  padding-top: 0;
-}
-.hm-principles li:last-child {
-  border-bottom: 0;
+.hm-principles li {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--midnight);
+  display: flex;
+  gap: 14px;
 }
 .hm-principles li > svg {
   flex: none;
@@ -288,18 +326,18 @@
   .hm-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .hm-prices {
-    max-width: none;
-  }
 }
 @media (max-width: 680px) {
-  .hm-hero {
-    padding-top: 40px;
-    padding-bottom: 64px;
+  .hm-hero-copy {
+    padding-top: 128px;
+    padding-bottom: 88px;
   }
   .hm-steps {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+  .hm-prices ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .hm-section {
     padding-top: 72px;
@@ -312,7 +350,6 @@
     padding-top: 72px;
     padding-bottom: 72px;
   }
-  .hm-prices,
   .hm-svc-card {
     padding: 22px;
   }
