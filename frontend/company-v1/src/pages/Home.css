@@ -13,8 +13,8 @@
   gap: 20px;
 }
 .hm-hero .h1 {
-  max-width: 860px;
-  font-size: clamp(36px, 5vw, 64px);
+  max-width: 1000px;
+  font-size: clamp(34px, 4.6vw, 60px);
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -427,4 +427,44 @@
 .hm-light .hm-principles li {
   background: var(--surface);
   box-shadow: var(--card-shadow);
+}
+
+/* Warm entrance: the hero settles in, the photo drifts slowly */
+@keyframes hm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes hm-drift {
+  from {
+    transform: scale(1.06);
+  }
+}
+.hm-hero-copy > * {
+  animation: hm-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hm-hero-copy > :nth-child(2) {
+  animation-delay: 0.08s;
+}
+.hm-hero-copy > :nth-child(3) {
+  animation-delay: 0.16s;
+}
+.hm-hero-photo {
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  animation: hm-rise 0.9s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hm-hero-photo img {
+  animation: hm-drift 12s ease-out both;
+}
+.hm-rotate {
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-hero-copy > *,
+  .hm-hero-photo,
+  .hm-hero-photo img {
+    animation: none;
+  }
 }

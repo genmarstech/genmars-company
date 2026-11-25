@@ -2,6 +2,7 @@ import { ContactSection } from '../components/ContactSection'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { RotatingWords } from '../components/RotatingWords'
 import { ServiceCard } from '../components/ServiceCard'
 import { TrustSections } from '../components/TrustSections'
 import { formatKes, services, whatsappLink } from '../data/site'
@@ -57,7 +58,12 @@ export function Home() {
       <section id="top" className="hm-hero">
         <div className="wrap hm-hero-copy">
           <h1 className="h1">
-            Websites and business software that <span className="serif">just work.</span>
+            Websites and business software
+            <br />
+            that{' '}
+            <span className="serif hm-rotate">
+              <RotatingWords words={['just work.', 'grow with you.', 'get you paid.', 'save you hours.', 'customers love.']} />
+            </span>
           </h1>
           <p className="lead hm-lead">
             We design, build and look after websites, online shops and custom systems for businesses. M-Pesa
