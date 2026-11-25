@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/enquiries/', include('applications_communications.urls')),
     path('api/v1/portal/', include('portal.urls')),
+    path('api/v1/team/', include('portal.team_urls')),
 ]

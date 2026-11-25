@@ -1,0 +1,358 @@
+/* Team dashboard additions on top of the portal styles */
+.tm-alerts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tm-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--muted);
+}
+.tm-alert strong {
+  color: var(--white);
+}
+.tm-alert--on {
+  border-color: rgba(47, 91, 245, 0.35);
+  color: var(--text-2);
+}
+.tm-alert--on strong {
+  color: var(--cobalt);
+}
+.tm-task {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: inherit;
+  font-size: 14px;
+}
+.tm-task:hover strong {
+  color: var(--cobalt);
+}
+.tm-overdue {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+
+/* Activity chart */
+.tm-chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.tm-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-legend span {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.tm-chart-box {
+  position: relative;
+}
+.tm-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.tm-tick {
+  font-size: 11px;
+  fill: var(--subtle);
+}
+.tm-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tm-tip strong {
+  color: var(--white);
+}
+.tm-tip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tm-tip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+/* Tables and forms */
+.tm-search {
+  min-height: 40px;
+  width: min(280px, 60vw);
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--white);
+}
+.tm-row-actions {
+  white-space: nowrap;
+}
+.tm-row-actions a {
+  margin-left: 12px;
+  font-weight: 500;
+  color: var(--cobalt);
+}
+.tm-click {
+  cursor: pointer;
+}
+.tm-click:hover td {
+  background: var(--surface-3);
+}
+.tm-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tm-progress-cell {
+  min-width: 160px;
+}
+.tm-progress-cell .pt-bar {
+  display: inline-block;
+  width: 100px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.tm-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+.tm-form--stack {
+  grid-template-columns: 1fr;
+}
+.tm-form .btn {
+  justify-self: start;
+}
+.tm-wide {
+  grid-column: 1 / -1;
+}
+.pt .field select,
+.pt .field input {
+  background: var(--surface);
+}
+.tm-status-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-status-edit select {
+  font-weight: 500;
+}
+.tm-status-edit select,
+.tm-ms select,
+.tm-compose-project {
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.tm-milestones {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tm-ms {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+}
+.tm-ms--in_progress {
+  border-left-color: var(--cobalt);
+}
+.tm-ms--done {
+  border-left-color: #0b7a6a;
+}
+.tm-ms > div {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+.tm-ms strong {
+  color: var(--white);
+  font-weight: 600;
+}
+.tm-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tm-inline input {
+  flex: 1 1 160px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--white);
+}
+
+/* Leads */
+.tm-leads {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+.tm-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-lead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tm-lead h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+}
+.tm-lead a {
+  color: var(--cobalt);
+}
+.tm-lead-meta {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tm-lead-meta strong {
+  color: var(--text-2);
+}
+.tm-lead-body {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  font-size: 14.5px;
+  white-space: pre-wrap;
+}
+.tm-lead-actions {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+}
+.tm-lead-actions select,
+.tm-lead-actions input {
+  min-height: 40px !important;
+}
+
+/* Messages inbox */
+.tm-inbox {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.tm-threads {
+  padding: 8px;
+}
+.tm-threads ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tm-thread {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.tm-thread:hover {
+  background: var(--surface-3);
+}
+.tm-thread[aria-current='true'] {
+  background: rgba(47, 91, 245, 0.08);
+}
+.tm-thread-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14.5px;
+}
+.tm-thread-top strong {
+  color: var(--white);
+}
+.tm-thread-last {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tm-dot {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tm-compose-project {
+  align-self: stretch;
+  min-height: 48px;
+}
+
+@media (max-width: 900px) {
+  .tm-inbox {
+    grid-template-columns: 1fr;
+  }
+  .tm-leads {
+    grid-template-columns: 1fr;
+  }
+}

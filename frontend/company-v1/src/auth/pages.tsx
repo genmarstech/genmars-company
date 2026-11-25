@@ -14,6 +14,7 @@ function formValues(e: FormEvent<HTMLFormElement>) {
 
 /** Where to go after signing in: onboarding first, then the page that sent them here, or their account. */
 function nextPath(user: User) {
+  if (user.is_staff) return '/team'
   if (!user.onboarding_completed) return '/onboarding'
   const next = new URLSearchParams(window.location.search).get('next')
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/portal'

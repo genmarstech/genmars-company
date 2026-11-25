@@ -81,3 +81,64 @@ class PortalTests(APITestCase):
     def test_portal_needs_sign_in(self):
         self.client.force_authenticate(None)
         self.assertEqual(self.client.get('/api/v1/portal/summary/').status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+@override_settings(MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}})
+class TeamApiTests(APITestCase):
+
+    def setUp(self):
+        self.client_user = User.objects.create_user(email='alice@example.com', password='S3cure-pass-123', full_name='Alice W')
+        self.other = User.objects.create_user(email='bob@example.com', password='S3cure-pass-123', full_name='Bob K')
+        self.staff = User.objects.create_user(email='edwin@example.com', password='S3cure-pass-123', full_name='Edwin Mwangi', is_staff=True)
+        self.project = Project.objects.create(client=self.client_user, name='Website redesign', status='in_progress', health='at_risk')
+        Message.objects.create(client=self.client_user, sender=self.client_user, body='Any update?')
+        self.client.force_authenticate(self.staff)
+
+    def test_clients_cannot_use_team_api(self):
+        self.client.force_authenticate(self.client_user)
+        self.assertEqual(self.client.get('/api/v1/team/summary/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get('/api/v1/team/projects/').status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_summary(self):
+        data = self.client.get('/api/v1/team/summary/').data
+        self.assertEqual(data['total_projects'], 1)
+        self.assertEqual(data['in_progress'], 1)
+        self.assertEqual(data['clients'], 2)
+        self.assertEqual(data['at_risk'], 1)
+        self.assertEqual(data['unanswered_messages'], 1)
+        self.assertEqual(len(data['activity']), 7)
+
+    def test_clients_list_counts_projects(self):
+        rows = {c['email']: c for c in self.client.get('/api/v1/team/clients/').data}
+        self.assertEqual(rows['alice@example.com']['project_count'], 1)
+        self.assertNotIn('edwin@example.com', rows)
+
+    def test_create_project_and_complete_milestone(self):
+        response = self.client.post('/api/v1/team/projects/', {'client': self.other.id, 'name': 'Shop', 'status': 'planning'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        pid = response.data['id']
+        m = self.client.post('/api/v1/team/milestones/', {'project': pid, 'title': 'Kickoff'}, format='json')
+        self.assertEqual(m.status_code, status.HTTP_201_CREATED)
+        done = self.client.patch(f"/api/v1/team/milestones/{m.data['id']}/", {'status': 'done'}, format='json')
+        self.assertIsNotNone(done.data['completed_at'])
+        reopened = self.client.patch(f"/api/v1/team/milestones/{m.data['id']}/", {'status': 'in_progress'}, format='json')
+        self.assertIsNone(reopened.data['completed_at'])
+
+    def test_progress_over_100_is_rejected(self):
+        response = self.client.patch(f'/api/v1/team/projects/{self.project.id}/', {'progress': 150}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invoice_project_must_match_client_and_paid_date_is_set(self):
+        bad = self.client.post('/api/v1/team/invoices/', {'client': self.other.id, 'project': self.project.id, 'number': 'X1', 'amount': '100'}, format='json')
+        self.assertEqual(bad.status_code, status.HTTP_400_BAD_REQUEST)
+        ok = self.client.post('/api/v1/team/invoices/', {'client': self.client_user.id, 'project': self.project.id, 'number': 'X2', 'amount': '100', 'status': 'paid'}, format='json')
+        self.assertEqual(ok.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(ok.data['paid_on'])
+
+    def test_reply_emails_the_client_and_clears_needs_reply(self):
+        response = self.client.post('/api/v1/team/messages/', {'client': self.client_user.id, 'body': 'Launching Friday'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(mail.outbox[-1].to, ['alice@example.com'])
+        threads = self.client.get('/api/v1/team/threads/').data
+        self.assertFalse(threads[0]['needs_reply'])
+        self.assertEqual(len(self.client.get(f'/api/v1/team/messages/?client={self.client_user.id}').data), 2)
