@@ -1,0 +1,117 @@
+.cs {
+  padding-bottom: 112px;
+  scroll-margin-top: 90px;
+}
+.cs-panel {
+  position: relative;
+  border-radius: 28px;
+  border: 1px solid rgba(142, 166, 255, 0.22);
+  background: linear-gradient(160deg, #0f1733 0%, var(--surface) 55%);
+  padding: clamp(28px, 5vw, 72px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px 72px;
+  overflow: hidden;
+}
+.cs-intro {
+  flex: 1 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.cs-title {
+  font-size: clamp(36px, 4.6vw, 60px);
+  line-height: 1.02;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--white);
+}
+.cs-copy {
+  font-size: 17px;
+  max-width: 440px;
+}
+.cs-promise {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.cs-promise li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cs-promise svg {
+  color: var(--signal);
+}
+.cs-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.cs-contacts a,
+.cs-contacts span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cs-contacts svg {
+  color: var(--ice);
+}
+
+.cs-form {
+  flex: 1 1 420px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.cs-full {
+  grid-column: 1 / -1;
+}
+.cs-optional {
+  color: var(--faint);
+}
+@media (max-width: 560px) {
+  .cs-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cs-sent {
+  flex: 1 1 420px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 32px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: rgba(5, 7, 13, 0.5);
+}
+.cs-sent h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+}
+.cs-sent a {
+  color: var(--ice);
+}
+.cs-sent-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(94, 234, 212, 0.12);
+  color: var(--signal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
