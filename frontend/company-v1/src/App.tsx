@@ -11,7 +11,6 @@ import { Portal } from './portal'
 import { Team } from './team'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignUpPage } from './auth/pages'
 import { navigate, usePathname } from './router'
-import { useReveal } from './useReveal'
 
 type Route = { title: string; page: () => React.JSX.Element | null; bare?: boolean }
 
@@ -44,8 +43,6 @@ function App() {
     const id = window.location.hash.slice(1)
     if (id) document.getElementById(id)?.scrollIntoView()
   }, [])
-
-  useReveal(path)
 
   useEffect(() => {
     // the old account page now lives in the client portal
@@ -85,7 +82,7 @@ function App() {
         Skip to content
       </a>
       <SiteHeader />
-      <main id="main" key={path} className="page-in">
+      <main id="main">
         <Page />
       </main>
       <SiteFooter />

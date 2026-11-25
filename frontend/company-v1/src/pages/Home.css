@@ -113,7 +113,6 @@
 }
 .hm-glance-card:hover {
   border-color: rgba(47, 91, 245, 0.35);
-  transform: translateY(-2px);
   box-shadow: 0 22px 44px -24px rgba(20, 50, 140, 0.55);
 }
 .hm-glance-art {
@@ -429,42 +428,10 @@
   box-shadow: var(--card-shadow);
 }
 
-/* Warm entrance: the hero settles in, the photo drifts slowly */
-@keyframes hm-rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-}
-@keyframes hm-drift {
-  from {
-    transform: scale(1.06);
-  }
-}
-.hm-hero-copy > * {
-  animation: hm-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.hm-hero-copy > :nth-child(2) {
-  animation-delay: 0.08s;
-}
-.hm-hero-copy > :nth-child(3) {
-  animation-delay: 0.16s;
-}
 .hm-hero-photo {
   overflow: hidden;
   border-radius: 24px 24px 0 0;
-  animation: hm-rise 0.9s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.hm-hero-photo img {
-  animation: hm-drift 12s ease-out both;
 }
 .hm-rotate {
   white-space: nowrap;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hm-hero-copy > *,
-  .hm-hero-photo,
-  .hm-hero-photo img {
-    animation: none;
-  }
 }

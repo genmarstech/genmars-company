@@ -51,7 +51,6 @@
 .sv-tile:hover {
   color: inherit;
   border-color: rgba(47, 91, 245, 0.35);
-  transform: translateY(-2px);
 }
 .sv-tile--ask {
   border-radius: var(--r-md);

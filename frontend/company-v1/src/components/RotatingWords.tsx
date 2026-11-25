@@ -6,7 +6,7 @@ import './RotatingWords.css'
  * centered heading stays centered. Screen readers get one stable sentence, and
  * reduced-motion users see the first phrase only.
  */
-export function RotatingWords({ words, interval = 2600 }: { words: string[]; interval?: number }) {
+export function RotatingWords({ words, interval = 3200 }: { words: string[]; interval?: number }) {
   const [index, setIndex] = useState(0)
   const [width, setWidth] = useState<number | undefined>(undefined)
   const refs = useRef<(HTMLSpanElement | null)[]>([])
