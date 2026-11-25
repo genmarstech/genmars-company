@@ -8,7 +8,10 @@ import { formatDate, kes, useApi } from '../portal/useApi'
 import { navigate } from '../router'
 import { Field } from './Field'
 import { formData, useMutation } from './shared'
-import type { TeamClient, TeamMilestone, TeamProject } from './types'
+import { TaskPanel } from './Tasks'
+import { EntryList, LogTime, UsedBar } from './Time'
+import { hm, useOnTimeLogged } from './shared'
+import type { Profitability, TeamClient, TeamMilestone, TeamProject, TimeEntry } from './types'
 
 const PROJECT_STATUSES = [
   { value: 'planning', label: 'Planning' },
@@ -186,6 +189,8 @@ export function TeamProjectDetail({ id }: { id: string }) {
             <Panel title="Milestones">
               <Milestones project={data} onChange={reload} />
             </Panel>
+            <TaskPanel project={data} />
+            <ProjectTime project={data} />
             <Panel title="Files & links">
               <Links project={data} onChange={reload} />
             </Panel>
@@ -350,5 +355,65 @@ function Links({ project, onChange }: { project: TeamProject; onChange: () => vo
       </form>
       {errors.url && <span className="field-error">{errors.url}</span>}
     </>
+  )
+}
+
+function ProjectTime({ project }: { project: TeamProject }) {
+  const entries = useApi<TimeEntry[]>(`/api/v1/team/time/?project=${project.id}`)
+  const money = useApi<Profitability>('/api/v1/team/profitability/')
+  const [logging, setLogging] = useState(false)
+  const reload = () => {
+    entries.reload()
+    money.reload()
+  }
+  useOnTimeLogged(entries.reload)
+  const row = money.data?.projects.find((p) => p.id === project.id)
+
+  return (
+    <Panel
+      title="Time & money"
+      action={
+        <button type="button" className="tm-link-btn" onClick={() => setLogging((l) => !l)}>
+          {logging ? 'Cancel' : 'Log time'}
+        </button>
+      }
+    >
+      {row && (
+        <dl className="tm-money-grid">
+          <div>
+            <dt>Worth</dt>
+            <dd>{kes(row.value)}</dd>
+          </div>
+          <div>
+            <dt>Hours</dt>
+            <dd>{hm(row.minutes)}</dd>
+          </div>
+          <div>
+            <dt>Time cost</dt>
+            <dd>{kes(row.cost)}</dd>
+          </div>
+          <div>
+            <dt>Profit</dt>
+            <dd className={Number(row.profit) < 0 ? 'tm-bad' : ''}>{kes(row.profit)}</dd>
+          </div>
+          <div className="tm-wide">
+            <dt>Budget used by time</dt>
+            <dd>
+              <UsedBar pct={row.budget_used} />
+            </dd>
+          </div>
+        </dl>
+      )}
+      {logging && (
+        <LogTime
+          project={project}
+          onSaved={() => {
+            setLogging(false)
+            reload()
+          }}
+        />
+      )}
+      {entries.data && entries.data.length > 0 && <EntryList entries={entries.data.slice(0, 8)} onChange={reload} showUser />}
+    </Panel>
   )
 }

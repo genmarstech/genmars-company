@@ -3,9 +3,12 @@ import { logout, useSession } from '../auth/session'
 import { Icon, LogoMark } from '../components/Icon'
 import { Link } from '../components/Link'
 import { navigate, usePathname } from '../router'
+import { CommandPalette } from '../team/CommandPalette'
+import { MOD_KEY, openPalette } from '../team/paletteKeys'
+import { TimerChip } from '../team/Timer'
 import './portal.css'
 
-type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' }
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' | 'clock' }
 
 const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
@@ -17,18 +20,21 @@ const clientNav: NavItem[] = [
 ]
 
 const teamNav: NavItem[] = [
-  { to: '/team', label: 'Dashboard', icon: 'layout' },
+  { to: '/team', label: 'Today', icon: 'layout' },
+  { to: '/team/work', label: 'My work', icon: 'check' },
   { to: '/team/clients', label: 'Clients', icon: 'team' },
   { to: '/team/projects', label: 'Projects', icon: 'code' },
   { to: '/team/leads', label: 'Leads', icon: 'mail' },
   { to: '/team/pipeline', label: 'Pipeline', icon: 'flow' },
+  { to: '/team/time', label: 'Time & profit', icon: 'clock' },
   { to: '/team/finance', label: 'Finance', icon: 'chart' },
   { to: '/team/invoices', label: 'Invoices', icon: 'card' },
   { to: '/team/messages', label: 'Messages', icon: 'chat' },
   { to: '/team/brand', label: 'Brand kit', icon: 'pen' },
 ]
 
-export function PortalLayout({ title, subtitle, actions, children, nav = clientNav, role = 'Client' }: {
+export function PortalLayout({ title, subtitle, actions, children, nav = clientNav, role = 'Client', search = false }: {
+  search?: boolean
   title: string
   subtitle?: string
   actions?: ReactNode
@@ -59,6 +65,13 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
             <span className="pt-tech">TECH</span>
           </span>
         </Link>
+        {search && (
+          <button type="button" className="pt-search" onClick={openPalette}>
+            <Icon name="search" size={16} />
+            <span>Search</span>
+            <kbd>{MOD_KEY} K</kbd>
+          </button>
+        )}
         <nav aria-label={role === 'Client' ? 'Portal' : 'Team'} className="pt-nav">
           {nav.map((n) => (
             <Link
@@ -111,18 +124,27 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
             <h1>{title}</h1>
             {subtitle && <p>{subtitle}</p>}
           </div>
-          <div className="pt-actions">{actions}</div>
+          <div className="pt-actions">
+            {search && <TimerChip />}
+            {search && (
+              <button type="button" className="pt-icon-btn pt-search-sm" aria-label="Search" onClick={openPalette}>
+                <Icon name="search" size={18} />
+              </button>
+            )}
+            {actions}
+          </div>
         </header>
         <main id="main" className="pt-content">
           {children}
         </main>
       </div>
+      {search && <CommandPalette />}
     </div>
   )
 }
 
 export function TeamLayout(props: { title: string; subtitle?: string; actions?: ReactNode; children: ReactNode }) {
-  return <PortalLayout {...props} nav={teamNav} role="Genmars team" />
+  return <PortalLayout {...props} nav={teamNav} role="Genmars team" search />
 }
 
 export function Panel({ title, action, children, className = '' }: {

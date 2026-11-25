@@ -565,6 +565,7 @@
 
 /* Invoices */
 .pt-table-wrap {
+  position: relative;
   overflow-x: auto;
 }
 .pt-table {
@@ -698,7 +699,7 @@
 }
 @media (max-width: 860px) {
   .pt {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .pt-side {
     position: fixed;

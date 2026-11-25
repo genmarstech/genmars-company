@@ -258,3 +258,6 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173' if DEBUG else '
 
 # Where new website enquiries are sent.
 ENQUIRY_NOTIFY_EMAIL = os.getenv('ENQUIRY_NOTIFY_EMAIL', 'info@genmars.co.ke')
+
+# Cost of an hour of team time (KES) when a person has no rate of their own set; used for project profitability.
+TEAM_DEFAULT_HOURLY_COST = int(os.getenv('TEAM_DEFAULT_HOURLY_COST', '1000'))

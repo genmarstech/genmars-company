@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Empty, Loading, Panel, TeamLayout } from '../portal/PortalLayout'
 import { formatDate, kes, useApi } from '../portal/useApi'
 import { Field } from './Field'
-import { formData, useMutation } from './shared'
+import { formData, useMutation, useScrollToHash } from './shared'
 import type { TeamClient, TeamInvoice, TeamProject } from './types'
 
 const STATUSES = [
@@ -13,9 +13,10 @@ const STATUSES = [
 ]
 
 export function TeamInvoices() {
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useState(() => new URLSearchParams(window.location.search).get('new') === '1')
   const { data, error, reload } = useApi<TeamInvoice[]>('/api/v1/team/invoices/')
   const { busy, run } = useMutation()
+  useScrollToHash(!!data)
   const outstanding = data?.filter((i) => i.status === 'sent' || i.status === 'overdue').reduce((t, i) => t + Number(i.amount), 0) ?? 0
 
   const setStatus = async (inv: TeamInvoice, status: string) => {
@@ -61,7 +62,7 @@ export function TeamInvoices() {
               </thead>
               <tbody>
                 {data.map((i) => (
-                  <tr key={i.id}>
+                  <tr key={i.id} id={`invoice-${i.id}`}>
                     <td>
                       <strong>{i.number}</strong>
                       <span className="pt-muted pt-small pt-block">{i.description || i.project_name || '—'}</span>
