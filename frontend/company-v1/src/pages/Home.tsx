@@ -57,6 +57,10 @@ export function Home() {
     <>
       {/* Hero */}
       <section id="top" className="hm-hero">
+        {/* faint diagram behind the whole hero, like walking into the system */}
+        <div className="hm-hero-backdrop" aria-hidden="true">
+          <HeroFlow backdrop />
+        </div>
         <div className="wrap hm-hero-copy">
           <h1 className="h1">
             Websites and business software
@@ -86,9 +90,15 @@ export function Home() {
             )}
           </div>
         </div>
-        <div className="wrap hm-hero-flow">
-          <HeroFlow />
-        </div>
+        <figure className="wrap hm-hero-photo">
+          <img src="/hero-nairobi.jpg" alt="Nairobi skyline at dusk" width={2400} height={1600} />
+          <figcaption>
+            Nairobi at dusk. Photo:{' '}
+            <a href="https://www.pexels.com/photo/stunning-nairobi-skyline-at-dusk-29069329/" target="_blank" rel="noopener noreferrer">
+              Ken Mwaura
+            </a>
+          </figcaption>
+        </figure>
       </section>
 
       {/* Services at a glance */}

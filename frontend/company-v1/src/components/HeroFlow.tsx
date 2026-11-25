@@ -147,7 +147,7 @@ function Diagram({ nodes, edges, vertical, width, height, motion }: {
   )
 }
 
-export function HeroFlow() {
+export function HeroFlow({ backdrop = false }: { backdrop?: boolean }) {
   const [motion, setMotion] = useState(false)
 
   useEffect(() => {
@@ -157,6 +157,15 @@ export function HeroFlow() {
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
+
+  if (backdrop) {
+    // decorative version: the wide diagram on every screen, no panel or caption
+    return (
+      <div className="hf hf--backdrop">
+        <Diagram nodes={wideNodes} edges={wideEdges} vertical={false} width={1120} height={286} motion={motion} />
+      </div>
+    )
+  }
 
   return (
     <figure className="hf" role="img" aria-label="How a Genmars system connects your business: an online order or booking is paid by M-Pesa or card, your Genmars system updates stock, sends the invoice and an SMS, and everything shows up on your dashboard and client portal.">

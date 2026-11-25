@@ -108,3 +108,40 @@
     padding-top: 40px;
   }
 }
+
+/* Behind the hero: no panel, ink-coloured lines that read faintly on the light page */
+.hf--backdrop {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.hf--backdrop .hf-wide {
+  display: block !important;
+}
+.hf--backdrop .hf-line {
+  stroke: #0b1530;
+  stroke-width: 1.6;
+}
+.hf--backdrop .hf-card {
+  fill: #ffffff;
+  stroke: #0b1530;
+}
+.hf--backdrop .hf-hub .hf-card {
+  fill: #eef3ff;
+  stroke: #2f5bf5;
+}
+.hf--backdrop .hf-title {
+  fill: #0b1530;
+}
+.hf--backdrop .hf-sub {
+  fill: #33415e;
+}
+.hf--backdrop .hf-port {
+  fill: #ffffff;
+  stroke: #0b1530;
+}
+.hf--backdrop .hf-signal {
+  fill: #2f5bf5;
+}

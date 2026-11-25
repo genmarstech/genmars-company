@@ -1,6 +1,32 @@
 /* Hero: centered copy on a soft blue wash, with the Nairobi skyline below */
 .hm-hero {
   position: relative;
+  overflow: hidden;
+}
+.hm-hero-copy,
+.hm-hero-photo {
+  z-index: 1;
+}
+/* The connection diagram as a faint floor in perspective behind the copy.
+   Low opacity and a soft fade keep the headline fully readable. */
+.hm-hero-backdrop {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: min(1500px, 140vw);
+  transform: translateX(-50%) perspective(900px) rotateX(38deg) scale(1.05);
+  transform-origin: 50% 0;
+  opacity: 0.11;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 60% 75% at 50% 30%, #000 25%, transparent 78%);
+  mask-image: radial-gradient(ellipse 60% 75% at 50% 30%, #000 25%, transparent 78%);
+}
+@media (max-width: 760px) {
+  .hm-hero-backdrop {
+    top: 40px;
+    width: 260vw;
+    opacity: 0.1;
+  }
 }
 .hm-hero-copy {
   position: relative;
@@ -32,9 +58,30 @@
   background: var(--surface);
 }
 
-.hm-hero-flow {
+/* A shorter photo that fades into the page, so the cards sit on it naturally */
+.hm-hero-photo {
+  position: relative;
   max-width: 1120px;
   margin: 0 auto;
+}
+.hm-hero-photo img {
+  width: 100%;
+  height: clamp(180px, 20vw, 280px);
+  object-fit: cover;
+  object-position: center 60%;
+  border-radius: 24px 24px 0 0;
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+}
+.hm-hero-photo figcaption {
+  position: absolute;
+  right: 40px;
+  top: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.hm-hero-photo figcaption a {
+  color: #ffffff;
 }
 
 /* Services at a glance */
@@ -42,7 +89,7 @@
   position: relative;
   z-index: 1;
   max-width: 1120px;
-  margin-top: -52px;
+  margin-top: -96px;
   padding-bottom: 56px;
   display: flex;
   flex-direction: column;
@@ -360,12 +407,16 @@
     padding-top: 40px;
     padding-bottom: 32px;
   }
+  .hm-hero-photo figcaption {
+    right: 30px;
+    font-size: 10px;
+  }
   .hm-steps {
     grid-template-columns: 1fr;
     gap: 24px;
   }
   .hm-glance {
-    margin-top: -48px;
+    margin-top: -64px;
   }
   .hm-glance ul {
     gap: 10px;
@@ -413,6 +464,10 @@
   box-shadow: var(--card-shadow);
 }
 
+.hm-hero-photo {
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+}
 .hm-rotate {
   white-space: nowrap;
 }
