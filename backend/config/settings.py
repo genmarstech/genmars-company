@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'accounts',
     'applications_communications',
+    'portal',
 ]
 
 MIDDLEWARE = [

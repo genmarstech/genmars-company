@@ -1,7 +1,7 @@
 import type { IconName } from '../data/site'
 import type { ReactNode } from 'react'
 
-const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock' | 'chart' | 'team' | 'support' | 'search' | 'layout' | 'rocket', ReactNode> = {
+const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock' | 'chart' | 'team' | 'support' | 'search' | 'layout' | 'rocket' | 'card' | 'chat' | 'gear' | 'logout' | 'link2' | 'send', ReactNode> = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
   code: <path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" />,
   globe: (
@@ -85,6 +85,22 @@ const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'cl
       <circle cx="16" cy="8" r="1.5" />
     </>
   ),
+  card: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 10h18M7 15h4" />
+    </>
+  ),
+  chat: <path d="M4 5h16v11H9l-5 4z" />,
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+    </>
+  ),
+  logout: <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11" />,
+  link2: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
+  send: <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />,
   phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />,
   clock: (
     <>

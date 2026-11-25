@@ -48,9 +48,16 @@ class UsersApiPermissionTests(APITestCase):
         self.assertEqual(self.alice.full_name, 'Alice W')
         self.assertFalse(self.alice.is_staff)
 
+    def test_password_change_needs_current_password(self):
+        self.client.force_authenticate(self.alice)
+        response = self.client.patch('/api/v1/auth/users/me/', {'password': 'An0ther-strong-pass', 'current_password': 'wrong'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.alice.refresh_from_db()
+        self.assertTrue(self.alice.check_password('S3cure-pass-123'))
+
     def test_password_update_is_hashed(self):
         self.client.force_authenticate(self.alice)
-        self.client.patch('/api/v1/auth/users/me/', {'password': 'An0ther-strong-pass'})
+        self.client.patch('/api/v1/auth/users/me/', {'password': 'An0ther-strong-pass', 'current_password': 'S3cure-pass-123'})
         self.alice.refresh_from_db()
         self.assertTrue(self.alice.check_password('An0ther-strong-pass'))
         self.assertNotEqual(self.alice.password, 'An0ther-strong-pass')

@@ -306,8 +306,8 @@ export function Onboarding() {
               day to plan your first project.
             </p>
             <div className="ob-actions ob-actions--center">
-              <Link to="/account" className="btn btn--lg">
-                Go to my account <Icon name="arrow" />
+              <Link to="/portal" className="btn btn--lg">
+                Go to my portal <Icon name="arrow" />
               </Link>
               <Link to="/contact" className="btn btn--lg btn--ghost">
                 Send a project brief
@@ -318,7 +318,7 @@ export function Onboarding() {
       </div>
 
       {step < 3 && (
-        <button type="button" className="ob-skip" onClick={() => navigate('/account')}>
+        <button type="button" className="ob-skip" onClick={() => navigate('/portal')}>
           Skip for now
         </button>
       )}
