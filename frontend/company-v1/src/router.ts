@@ -8,7 +8,7 @@ const NAV_EVENT = 'genmars:navigate'
 export function navigate(to: string) {
   const url = new URL(to, window.location.origin)
   const samePage = url.pathname === window.location.pathname
-  window.history.pushState({}, '', url.pathname + url.hash)
+  window.history.pushState({}, '', url.pathname + url.search + url.hash)
   window.dispatchEvent(new Event(NAV_EVENT))
 
   requestAnimationFrame(() => {
