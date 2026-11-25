@@ -3,6 +3,9 @@
   top: 0;
   z-index: 50;
   border-bottom: 1px solid transparent;
+  background: var(--header-bg);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
   transition: background-color 0.2s ease, border-color 0.2s ease, backdrop-filter 0.2s ease;
 }
 .sh--scrolled,
@@ -63,8 +66,39 @@
   gap: 36px;
   font-size: 14.5px;
 }
+.sh-links a {
+  position: relative;
+  padding: 6px 0;
+  color: var(--text-2);
+}
+.sh-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cobalt);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sh-links a:hover {
+  color: var(--white);
+}
+.sh-links a:hover::after,
+.sh-links a[aria-current='page']::after {
+  transform: scaleX(1);
+}
 .sh-links a[aria-current='page'] {
-  color: var(--ice);
+  color: var(--cobalt);
+}
+.sh-login {
+  color: var(--text-2);
+}
+.sh-login:hover {
+  color: var(--cobalt);
 }
 
 .sh-actions {
@@ -84,6 +118,10 @@
   }
 }
 
+.sh-toggle:hover {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
 .sh-toggle {
   display: none;
   width: 44px;
@@ -120,6 +158,9 @@
   .sh-links a {
     padding: 14px 4px;
     border-top: 1px solid var(--line-soft);
+  }
+  .sh-links a::after {
+    display: none;
   }
 }
 

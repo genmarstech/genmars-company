@@ -1,0 +1,33 @@
+.rw {
+  display: inline-block;
+  vertical-align: bottom;
+}
+.rw-stack {
+  display: inline-grid;
+  justify-items: start;
+  overflow: visible;
+  transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rw-word {
+  grid-area: 1 / 1;
+  justify-self: start;
+  width: max-content;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(0.45em);
+  filter: blur(6px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.55s ease;
+}
+.rw-word.is-on {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.rw-word.is-out {
+  transform: translateY(-0.45em);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rw-word {
+    transition: none;
+  }
+}
