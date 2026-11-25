@@ -1,20 +1,52 @@
+# Genmars backend: the API and its Postgres database (genmars_db).
+# Values come from backend/.env (see .env.example).
+#   docker compose up -d --build     start or update
+#   docker compose logs -f api       follow the API logs
 services:
   genmarsdb:
     image: postgres:17-alpine
     container_name: genmars_db
     restart: unless-stopped
-
-    # Credentials come from backend/.env (see .env.example); never hard-code them here.
     environment:
       POSTGRES_USER: ${DB_USER:?set DB_USER in .env}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
       POSTGRES_DB: ${DB_NAME:?set DB_NAME in .env}
-
     ports:
+      # for local tools only; not reachable from other machines
       - "127.0.0.1:${DB_PORT:-5433}:5432"
-
     volumes:
       - genmarsdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: genmars_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # inside Docker the database is reached by its service name
+      DB_HOST: genmarsdb
+      DB_PORT: "5432"
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: ${API_HOSTS:-api.genmars.co.ke,localhost,127.0.0.1}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${API_ORIGINS:-https://api.genmars.co.ke}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${SITE_ORIGINS:-https://company-v1-gamma.vercel.app,https://genmars.co.ke,https://www.genmars.co.ke}
+      FRONTEND_URL: ${FRONTEND_URL:-https://company-v1-gamma.vercel.app}
+    depends_on:
+      genmarsdb:
+        condition: service_healthy
+    ports:
+      # nginx on this machine proxies api.genmars.co.ke to here
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   genmarsdb_data:

@@ -1,7 +1,7 @@
-// The API runs on a primary server (Contabo) with a standby on the office machine.
-// Requests go to the primary first and fall back to the next server when it is
-// unreachable, too slow or erroring. In local development Vite proxies /api.
-const DEFAULT_SERVERS = import.meta.env.DEV ? [''] : ['https://api.genmars.co.ke', 'https://backup.genmars.co.ke']
+// The API lives at api.genmars.co.ke. More servers can be listed in VITE_API_URLS
+// (comma-separated, primary first): requests fall back to the next one when a server
+// is unreachable, too slow or erroring. In local development Vite proxies /api.
+const DEFAULT_SERVERS = import.meta.env.DEV ? [''] : ['https://api.genmars.co.ke']
 
 export const API_SERVERS: string[] = import.meta.env.VITE_API_URLS
   ? String(import.meta.env.VITE_API_URLS)
