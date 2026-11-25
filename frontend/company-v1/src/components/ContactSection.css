@@ -5,8 +5,8 @@
 .cs-panel {
   position: relative;
   border-radius: 28px;
-  border: 1px solid rgba(142, 166, 255, 0.22);
-  background: linear-gradient(160deg, #0f1733 0%, var(--surface) 55%);
+  border: 1px solid var(--line);
+  background: var(--surface);
   padding: clamp(28px, 5vw, 72px);
   display: flex;
   flex-wrap: wrap;
@@ -20,10 +20,10 @@
   gap: 24px;
 }
 .cs-title {
-  font-size: clamp(36px, 4.6vw, 60px);
-  line-height: 1.02;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1.1;
   font-weight: 600;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
   color: var(--white);
 }
 .cs-copy {

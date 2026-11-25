@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from '../router'
 import { Link } from './Link'
+import { caseStudies } from '../data/site'
 import { Icon, LogoMark } from './Icon'
 import './SiteHeader.css'
 
 const links = [
-  { to: '/services', label: 'Services' },
-  { to: '/#process', label: 'Process' },
-  { to: '/#labs', label: 'Labs' },
-  { to: '/#about', label: 'Why Genmars' },
+  { to: '/services', label: 'Services & prices' },
+  ...(caseStudies.length ? [{ to: '/#work', label: 'Our work' }] : []),
+  { to: '/#process', label: 'How we work' },
   { to: '/#contact', label: 'Contact' },
 ]
 
@@ -50,7 +50,7 @@ export function SiteHeader() {
 
         <div className="sh-actions">
           <Link to="/#contact" className="btn btn--sm">
-            Start a project
+            Get a quote
             <Icon name="arrow" size={16} />
           </Link>
           <button

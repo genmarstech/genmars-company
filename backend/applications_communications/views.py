@@ -1,8 +1,21 @@
+import ipaddress
+
 from rest_framework import generics, mixins, permissions, viewsets
 from rest_framework.throttling import ScopedRateThrottle
 from .models import Enquiry
 from .notifications import notify_new_enquiry
 from .serializers import EnquiryCreateSerializer, EnquirySerializer
+
+
+def client_ip(request):
+    # behind Render/Vercel the visitor's address is the first X-Forwarded-For entry
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    ip = forwarded.split(',')[0].strip() or request.META.get('REMOTE_ADDR')
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        return None
+    return ip
 
 
 class EnquiryCreateView(generics.CreateAPIView):
@@ -16,7 +29,7 @@ class EnquiryCreateView(generics.CreateAPIView):
     throttle_scope = 'enquiry'
 
     def perform_create(self, serializer):
-        enquiry = serializer.save(ip_address=self.request.META.get('REMOTE_ADDR'))
+        enquiry = serializer.save(ip_address=client_ip(self.request))
         notify_new_enquiry(enquiry)
 
 

@@ -50,19 +50,17 @@ export function Services() {
   return (
     <>
       <section className="wrap sv-hero">
-        <span className="eyebrow">Services &amp; pricing</span>
-        <h1 className="sv-title">
-          Seven ways we help you <span className="serif">build.</span>
-        </h1>
+        <span className="eyebrow">Services &amp; prices</span>
+        <h1 className="sv-title">What we do, what it costs, and how long it takes.</h1>
         <p className="lead sv-lead">
-          Pick one, or combine them. Every engagement starts with a free discovery call and ends with software you own.
+          Prices are starting points in Kenyan shillings. After a free first conversation you get a written quote with
+          one fixed price.
         </p>
       </section>
 
       <section className="wrap sv-list" aria-label="Services">
         {services.map((s) => (
           <article key={s.slug} id={s.slug} className="sv-row">
-            <span className="sv-n">{s.n}</span>
             <div className="sv-main">
               <h2>{s.title}</h2>
               <p className="muted">{s.desc}</p>
@@ -88,10 +86,8 @@ export function Services() {
       <section className="sv-models-wrap">
         <div className="wrap sv-models-inner">
           <div className="sv-head">
-            <span className="eyebrow">How we work together</span>
-            <h2 className="h2">
-              Three ways to <span className="serif">engage.</span>
-            </h2>
+            <span className="eyebrow">Ways to work with us</span>
+            <h2 className="h2">A one-off project, or ongoing help.</h2>
           </div>
           <div className="sv-models">
             {models.map((m) => (
@@ -113,12 +109,10 @@ export function Services() {
         </div>
       </section>
 
-      <section className="wrap sv-faq">
+      <section id="faq" className="wrap sv-faq">
         <div className="sv-head sv-faq-head">
           <span className="eyebrow">Questions</span>
-          <h2 className="h2">
-            Good to <span className="serif">know.</span>
-          </h2>
+          <h2 className="h2">Common questions.</h2>
         </div>
         <div className="sv-faq-list">
           {faq.map(([q, a], i) => {
@@ -147,11 +141,9 @@ export function Services() {
 
       <section className="wrap sv-cta-wrap">
         <div className="card sv-cta">
-          <h2 className="h2">
-            Not sure which fits? <span className="serif">Let’s talk.</span>
-          </h2>
+          <h2 className="h2">Not sure which fits? Ask us.</h2>
           <Link to="/services#contact" className="btn btn--lg">
-            Book a free call <Icon name="arrow" />
+            Get a free quote <Icon name="arrow" />
           </Link>
         </div>
       </section>

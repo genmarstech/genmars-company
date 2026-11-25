@@ -1,7 +1,7 @@
 import type { IconName } from '../data/site'
 import type { ReactNode } from 'react'
 
-const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close', ReactNode> = {
+const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock', ReactNode> = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
   code: <path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" />,
   globe: (
@@ -51,6 +51,13 @@ const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'cl
     </>
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />,
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
 }
