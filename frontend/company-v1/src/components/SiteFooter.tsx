@@ -55,7 +55,9 @@ export function SiteFooter() {
             </div>
             <div className="sf-col">
               <span className="label">Company</span>
+              <Link to="/about">About</Link>
               <Link to="/how-we-work">How we work</Link>
+              <Link to="/products">Products</Link>
               <Link to="/services#faq">Questions</Link>
               <Link to="/contact">Contact</Link>
             </div>
@@ -66,7 +68,11 @@ export function SiteFooter() {
             © {new Date().getFullYear()} {company.legalName || 'Genmars Tech'}
             {company.registrationNo && ` · Reg. no. ${company.registrationNo}`}
           </span>
-          <span>{[company.address, company.city].filter(Boolean).join(', ')}</span>
+          <span className="sf-legal">
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+            <span>{[company.address, company.city].filter(Boolean).join(', ')}</span>
+          </span>
         </div>
       </div>
     </footer>

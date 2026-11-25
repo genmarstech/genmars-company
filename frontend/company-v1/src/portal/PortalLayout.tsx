@@ -5,11 +5,12 @@ import { Link } from '../components/Link'
 import { navigate, usePathname } from '../router'
 import './portal.css'
 
-type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' }
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' }
 
 const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
   { to: '/portal/projects', label: 'Projects', icon: 'code' },
+  { to: '/portal/requests', label: 'New request', icon: 'mail' },
   { to: '/portal/invoices', label: 'Invoices', icon: 'card' },
   { to: '/portal/messages', label: 'Messages', icon: 'chat' },
   { to: '/portal/settings', label: 'Settings', icon: 'gear' },
@@ -20,6 +21,8 @@ const teamNav: NavItem[] = [
   { to: '/team/clients', label: 'Clients', icon: 'team' },
   { to: '/team/projects', label: 'Projects', icon: 'code' },
   { to: '/team/leads', label: 'Leads', icon: 'mail' },
+  { to: '/team/pipeline', label: 'Pipeline', icon: 'flow' },
+  { to: '/team/finance', label: 'Finance', icon: 'chart' },
   { to: '/team/invoices', label: 'Invoices', icon: 'card' },
   { to: '/team/messages', label: 'Messages', icon: 'chat' },
 ]

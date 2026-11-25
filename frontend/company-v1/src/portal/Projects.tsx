@@ -25,7 +25,7 @@ export function ProjectsList() {
       ) : data.length === 0 ? (
         <Panel>
           <Empty>
-            You don’t have any projects yet. <Link to="/contact">Send us a brief</Link> and we’ll set one up.
+            You don’t have any projects yet. <Link to="/portal/requests">Send us a request</Link> and we’ll set one up.
           </Empty>
         </Panel>
       ) : (

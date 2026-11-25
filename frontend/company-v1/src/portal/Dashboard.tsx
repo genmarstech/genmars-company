@@ -14,8 +14,8 @@ export function Dashboard() {
       title="Dashboard"
       subtitle={`Welcome back, ${user?.full_name.split(' ')[0] ?? ''}. Here’s where your projects stand.`}
       actions={
-        <Link to="/contact" className="btn btn--sm">
-          New project <Icon name="arrow" size={16} />
+        <Link to="/portal/requests" className="btn btn--sm">
+          New request <Icon name="arrow" size={16} />
         </Link>
       }
     >
@@ -42,7 +42,7 @@ export function Dashboard() {
               {data.projects.length === 0 ? (
                 <Empty>
                   No active projects yet. Once we agree a quote, your project and its timeline appear here.{' '}
-                  <Link to="/contact">Start a project</Link>
+                  <Link to="/portal/requests">Send a request</Link>
                 </Empty>
               ) : (
                 <ul className="pt-list">

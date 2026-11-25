@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -28,6 +29,11 @@ class Enquiry(models.Model):
         WON = 'won', 'Won'
         LOST = 'lost', 'Lost'
 
+    class Source(models.TextChoices):
+        WEBSITE = 'website', 'Website form'
+        PORTAL = 'portal', 'Client portal'
+        EARLY_ACCESS = 'early_access', 'Product early access'
+
     full_name = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, blank=True, default='')
@@ -35,6 +41,11 @@ class Enquiry(models.Model):
     budget = models.CharField(max_length=32, choices=Budget.choices, default=Budget.UNSURE)
     message = models.TextField()
 
+    source = models.CharField(max_length=16, choices=Source.choices, default=Source.WEBSITE)
+    # set when a signed-in client asks for a new project from their portal
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='project_requests'
+    )
     status = models.CharField(max_length=32, choices=Status.choices, default=Status.NEW, db_index=True)
     internal_notes = models.TextField(blank=True, default='')
     ip_address = models.GenericIPAddressField(null=True, blank=True)

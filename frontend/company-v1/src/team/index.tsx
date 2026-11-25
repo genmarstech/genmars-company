@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { useSession } from '../auth/session'
 import { navigate } from '../router'
 import { Clients } from './Clients'
+import { FinancePage } from './Finance'
+import { Pipeline } from './Pipeline'
 import { TeamInvoices } from './Invoices'
 import { Leads } from './Leads'
 import { TeamMessages } from './Messages'
@@ -29,6 +31,10 @@ export function Team({ path }: { path: string }) {
       return <TeamProjects key={window.location.search} />
     case '/team/leads':
       return <Leads />
+    case '/team/pipeline':
+      return <Pipeline />
+    case '/team/finance':
+      return <FinancePage />
     case '/team/invoices':
       return <TeamInvoices />
     case '/team/messages':

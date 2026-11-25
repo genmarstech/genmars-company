@@ -3,7 +3,10 @@ import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { Home } from './pages/Home'
 import { NotFound } from './pages/NotFound'
+import { About } from './pages/About'
 import { Contact } from './pages/Contact'
+import { Privacy, Terms } from './pages/Legal'
+import { Products } from './pages/Products'
 import { HowWeWork } from './pages/HowWeWork'
 import { Services } from './pages/Services'
 import { Onboarding } from './pages/Onboarding'
@@ -19,6 +22,10 @@ const routes: Record<string, Route> = {
   '/services': { title: 'Services & pricing · Genmars Tech', page: Services },
   '/how-we-work': { title: 'How we work · Genmars Tech', page: HowWeWork },
   '/contact': { title: 'Contact us · Genmars Tech', page: Contact },
+  '/about': { title: 'About us · Genmars Tech', page: About },
+  '/products': { title: 'Products · Genmars Labs', page: Products },
+  '/privacy': { title: 'Privacy policy · Genmars Tech', page: Privacy },
+  '/terms': { title: 'Terms of service · Genmars Tech', page: Terms },
   '/login': { title: 'Sign in · Genmars Tech', page: LoginPage, bare: true },
   '/signup': { title: 'Create your account · Genmars Tech', page: SignUpPage, bare: true },
   '/forgot-password': { title: 'Forgot password · Genmars Tech', page: ForgotPasswordPage, bare: true },

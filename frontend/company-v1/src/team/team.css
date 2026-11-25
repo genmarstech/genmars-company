@@ -356,3 +356,102 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Pipeline board */
+.tm-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.tm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--surface-3);
+  border-top: 3px solid var(--line-strong);
+  min-height: 160px;
+}
+.tm-col--new {
+  border-top-color: var(--cobalt);
+}
+.tm-col--contacted,
+.tm-col--proposal_sent {
+  border-top-color: #d97706;
+}
+.tm-col--won {
+  border-top-color: #0f9d88;
+}
+.tm-col h2 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+}
+.tm-col h2 span {
+  color: var(--subtle);
+  font-weight: 500;
+}
+.tm-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  font-size: 14px;
+}
+.tm-card strong {
+  color: var(--white);
+}
+.tm-card p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.tm-card-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.tm-card-foot select {
+  min-height: 30px;
+  padding: 0 6px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+
+/* Finance */
+.tm-money {
+  font-size: 24px;
+}
+.tm-bad {
+  color: #b91c1c;
+}
+.tm-overdue-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.tm-overdue-list li:first-child {
+  border-top: 0;
+}

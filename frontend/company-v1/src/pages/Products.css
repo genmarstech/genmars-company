@@ -1,0 +1,91 @@
+.pr-hero {
+  padding-top: 72px;
+  padding-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.pr-title {
+  font-size: clamp(36px, 5vw, 60px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--white);
+}
+.pr-lead {
+  max-width: 640px;
+}
+.pr-grid {
+  padding-bottom: 96px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+.pr-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pr-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.pr-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+.pr-tag {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.pr-tagline {
+  font-weight: 500;
+  color: var(--text-2);
+}
+.pr-card .muted {
+  font-size: 15px;
+}
+.pr-form {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pr-form input {
+  flex: 1 1 180px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--white);
+}
+.pr-form input:focus {
+  outline: none;
+  border-color: var(--cobalt);
+}
+.pr-form .field-error {
+  flex-basis: 100%;
+}
+.pr-done {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  color: var(--signal);
+}

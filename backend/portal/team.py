@@ -174,6 +174,47 @@ def message_threads():
     return sorted(threads, key=lambda t: t['last_at'], reverse=True)
 
 
+class TeamFinanceView(APIView):
+    """Money in and money owed, from invoices."""
+
+    permission_classes = [Staff]
+
+    def get(self, request):
+        today = timezone.localdate()
+        month_start = today.replace(day=1)
+        invoices = Invoice.objects.exclude(status=Invoice.Status.DRAFT).select_related('client')
+        paid = invoices.filter(status=Invoice.Status.PAID)
+        unpaid = invoices.filter(status__in=[Invoice.Status.SENT, Invoice.Status.OVERDUE])
+        overdue = unpaid.filter(Q(status=Invoice.Status.OVERDUE) | Q(due_on__lt=today))
+
+        # paid per calendar month, oldest first, for the last 6 months
+        months = []
+        first = month_start
+        for _ in range(5):
+            first = (first - timedelta(days=1)).replace(day=1)
+        for i in range(6):
+            nxt = (first + timedelta(days=32)).replace(day=1)
+            total = sum(inv.amount for inv in paid if inv.paid_on and first <= inv.paid_on < nxt)
+            months.append({'month': first, 'paid': total})
+            first = nxt
+
+        def total(qs):
+            return sum((inv.amount for inv in qs), 0)
+
+        return Response({
+            'paid_this_month': total(paid.filter(paid_on__gte=month_start)),
+            'paid_this_year': total(paid.filter(paid_on__year=today.year)),
+            'outstanding': total(unpaid),
+            'overdue': total(overdue),
+            'overdue_count': overdue.count(),
+            'months': months,
+            'overdue_invoices': [
+                {'id': inv.id, 'number': inv.number, 'client': inv.client.full_name, 'amount': inv.amount, 'due_on': inv.due_on}
+                for inv in overdue.order_by('due_on')[:8]
+            ],
+        })
+
+
 class TeamThreadsView(APIView):
     permission_classes = [Staff]
 

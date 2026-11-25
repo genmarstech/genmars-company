@@ -10,8 +10,12 @@ class EnquiryCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Enquiry
-        fields = ['id', 'full_name', 'email', 'phone_number', 'service', 'budget', 'message', 'website', 'created_at']
+        fields = ['id', 'full_name', 'email', 'phone_number', 'service', 'budget', 'message', 'source', 'website', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+    def validate_source(self, value):
+        # the public form can only be the website or a product early-access sign-up
+        return value if value in (Enquiry.Source.WEBSITE, Enquiry.Source.EARLY_ACCESS) else Enquiry.Source.WEBSITE
 
     def validate_message(self, value):
         if len(value.strip()) < 10:
@@ -29,15 +33,35 @@ class EnquirySerializer(serializers.ModelSerializer):
 
     service_label = serializers.CharField(source='get_service_display', read_only=True)
     budget_label = serializers.CharField(source='get_budget_display', read_only=True)
+    source_label = serializers.CharField(source='get_source_display', read_only=True)
 
     class Meta:
         model = Enquiry
         fields = [
             'id', 'full_name', 'email', 'phone_number',
             'service', 'service_label', 'budget', 'budget_label', 'message',
-            'status', 'internal_notes', 'ip_address', 'created_at', 'updated_at',
+            'source', 'source_label', 'client', 'status', 'internal_notes', 'ip_address', 'created_at', 'updated_at',
         ]
         read_only_fields = [
             'id', 'full_name', 'email', 'phone_number', 'service', 'budget', 'message',
-            'ip_address', 'created_at', 'updated_at',
+            'source', 'client', 'ip_address', 'created_at', 'updated_at',
         ]
+
+
+
+class PortalRequestSerializer(serializers.ModelSerializer):
+    """A new project request from a signed-in client; their name and email come from the account."""
+
+    service_label = serializers.CharField(source='get_service_display', read_only=True)
+    budget_label = serializers.CharField(source='get_budget_display', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = Enquiry
+        fields = ['id', 'service', 'service_label', 'budget', 'budget_label', 'message', 'status', 'status_label', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at']
+
+    def validate_message(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError('Please tell us a little more about the project.')
+        return value.strip()

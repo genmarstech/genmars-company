@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -142,3 +142,54 @@ class TeamApiTests(APITestCase):
         threads = self.client.get('/api/v1/team/threads/').data
         self.assertFalse(threads[0]['needs_reply'])
         self.assertEqual(len(self.client.get(f'/api/v1/team/messages/?client={self.client_user.id}').data), 2)
+
+
+@override_settings(
+    MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}},
+    ENQUIRY_NOTIFY_EMAIL='team@genmars.test',
+)
+class ProjectRequestAndFinanceTests(APITestCase):
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+        self.alice = User.objects.create_user(email='alice@example.com', password='S3cure-pass-123', full_name='Alice W', phone_number='+254700000001')
+        self.bob = User.objects.create_user(email='bob@example.com', password='S3cure-pass-123', full_name='Bob K')
+        self.staff = User.objects.create_user(email='edwin@example.com', password='S3cure-pass-123', full_name='Edwin M', is_staff=True)
+
+    def test_client_request_becomes_a_lead_with_their_details(self):
+        from applications_communications.models import Enquiry
+        self.client.force_authenticate(self.alice)
+        response = self.client.post('/api/v1/portal/requests/', {'service': 'ecommerce', 'budget': '50k_150k', 'message': 'Add an online shop to our site'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        lead = Enquiry.objects.get()
+        self.assertEqual((lead.client, lead.email, lead.source, lead.phone_number), (self.alice, 'alice@example.com', 'portal', '+254700000001'))
+        self.assertEqual(mail.outbox[0].to, ['team@genmars.test'])
+
+        self.client.force_authenticate(self.bob)
+        self.assertEqual(self.client.get('/api/v1/portal/requests/').data, [])
+
+    def test_public_form_cannot_claim_portal_source(self):
+        from applications_communications.models import Enquiry
+        self.client.post('/api/v1/enquiries/', {'full_name': 'X', 'email': 'x@example.com', 'message': 'Early access to Commerce please', 'source': 'portal'}, format='json')
+        self.client.post('/api/v1/enquiries/', {'full_name': 'Y', 'email': 'y@example.com', 'message': 'Early access to Commerce please', 'source': 'early_access'}, format='json')
+        self.assertEqual(sorted(Enquiry.objects.values_list('source', flat=True)), ['early_access', 'website'])
+
+    def test_finance_totals(self):
+        today = timezone.localdate()
+        Invoice.objects.create(client=self.alice, number='F1', amount=40000, status='paid', paid_on=today)
+        Invoice.objects.create(client=self.alice, number='F2', amount=25000, status='sent', due_on=today - timedelta(days=3))
+        Invoice.objects.create(client=self.bob, number='F3', amount=10000, status='sent', due_on=today + timedelta(days=10))
+        Invoice.objects.create(client=self.bob, number='F4', amount=99999, status='draft')
+        self.client.force_authenticate(self.staff)
+        data = self.client.get('/api/v1/team/finance/').data
+        self.assertEqual(data['paid_this_month'], 40000)
+        self.assertEqual(data['outstanding'], 35000)
+        self.assertEqual(data['overdue'], 25000)
+        self.assertEqual(len(data['months']), 6)
+        self.assertEqual(data['months'][-1]['paid'], 40000)
+        self.assertEqual([i['number'] for i in data['overdue_invoices']], ['F2'])
+
+    def test_finance_is_staff_only(self):
+        self.client.force_authenticate(self.alice)
+        self.assertEqual(self.client.get('/api/v1/team/finance/').status_code, status.HTTP_403_FORBIDDEN)
