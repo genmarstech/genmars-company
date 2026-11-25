@@ -110,6 +110,7 @@ export function Home() {
         <p>Starting prices. You get a written, fixed quote after a free first conversation.</p>
       </section>
 
+      <div className="theme-light hm-light">
       {/* Who we work with */}
       <section aria-label="Who we work with" className="hm-strip">
         <div className="wrap hm-strip-inner">
@@ -157,6 +158,9 @@ export function Home() {
         <div className="hm-head">
           <span className="eyebrow">How we work</span>
           <h2 className="h2">Clear steps, from first call to launch.</h2>
+          <Link to="/how-we-work" className="text-link">
+            See the full process <Icon name="arrow" size={16} />
+          </Link>
         </div>
         <ol className="hm-steps">
           {steps.map((s, i) => (
@@ -195,6 +199,7 @@ export function Home() {
       </section>
 
       <ContactSection />
+      </div>
     </>
   )
 }

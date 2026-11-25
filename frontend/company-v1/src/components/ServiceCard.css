@@ -21,6 +21,9 @@
 
 /* Details panel slides up over the photo */
 .svc-more {
+  --text-2: #c9d3ea;
+  --subtle: #8e9ab4;
+  --ice: #8ea6ff;
   position: absolute;
   inset: 0;
   padding: 18px 20px;

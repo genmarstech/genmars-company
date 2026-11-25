@@ -1,20 +1,91 @@
 .sv-hero {
-  padding-top: 88px;
-  padding-bottom: 72px;
+  padding-top: 72px;
+  padding-bottom: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 40px 64px;
+}
+.sv-hero-copy {
+  flex: 1 1 480px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 .sv-title {
-  max-width: 900px;
-  font-size: clamp(38px, 5vw, 64px);
-  line-height: 1.06;
-  font-weight: 600;
-  letter-spacing: -0.045em;
+  max-width: 640px;
+  font-size: clamp(36px, 4.4vw, 56px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.035em;
   color: var(--white);
 }
 .sv-lead {
-  max-width: 620px;
+  max-width: 560px;
+}
+.sv-hero-art {
+  flex: 1 1 360px;
+  max-width: 480px;
+  padding: 14px;
+  border-radius: 24px;
+  background: #0a0f1c;
+  box-shadow: 0 40px 80px -40px rgba(20, 50, 140, 0.55);
+  transform: rotate(-2deg);
+}
+
+/* Board-style icon tiles */
+.sv-grid {
+  padding-bottom: 96px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.sv-tile {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: inherit;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.sv-tile:hover {
+  color: inherit;
+  border-color: rgba(47, 91, 245, 0.35);
+  transform: translateY(-2px);
+}
+.sv-tile--ask {
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-strong);
+}
+.sv-tile-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 6px;
+  border-radius: 11px;
+  background: rgba(47, 91, 245, 0.1);
+  color: var(--cobalt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sv-tile-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+}
+.sv-tile-text {
+  font-size: 14px;
+  color: var(--muted);
+}
+.sv-tile-price {
+  margin-top: auto;
+  padding-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cobalt);
 }
 
 .sv-list {
@@ -204,8 +275,10 @@
 }
 @media (max-width: 680px) {
   .sv-hero {
-    padding-top: 48px;
-    padding-bottom: 48px;
+    padding-top: 40px;
+  }
+  .sv-hero-art {
+    display: none;
   }
   .sv-models-inner,
   .sv-faq {

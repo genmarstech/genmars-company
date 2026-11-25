@@ -6,10 +6,11 @@ import { Icon, LogoMark } from './Icon'
 import './SiteHeader.css'
 
 const links = [
-  { to: '/services', label: 'Services & prices' },
+  { to: '/', label: 'Home' },
+  { to: '/services', label: 'Services' },
   ...(caseStudies.length ? [{ to: '/#work', label: 'Our work' }] : []),
-  { to: '/#process', label: 'How we work' },
-  { to: '/#contact', label: 'Contact' },
+  { to: '/how-we-work', label: 'How we work' },
+  { to: '/contact', label: 'Contact' },
 ]
 
 export function SiteHeader() {
@@ -30,7 +31,7 @@ export function SiteHeader() {
         <Link to="/" className="sh-brand">
           <LogoMark label="Genmars Tech home" />
           <span className="sh-word">
-            <span>Genmars</span>
+            <span className="sh-name">GENMARS</span>
             <span className="sh-tech">TECH</span>
           </span>
         </Link>
@@ -49,7 +50,7 @@ export function SiteHeader() {
         </div>
 
         <div className="sh-actions">
-          <Link to="/#contact" className="btn btn--sm">
+          <Link to="/contact" className="btn btn--sm">
             Get a quote
             <Icon name="arrow" size={16} />
           </Link>

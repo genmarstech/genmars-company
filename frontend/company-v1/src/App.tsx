@@ -3,12 +3,16 @@ import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { Home } from './pages/Home'
 import { NotFound } from './pages/NotFound'
+import { Contact } from './pages/Contact'
+import { HowWeWork } from './pages/HowWeWork'
 import { Services } from './pages/Services'
 import { usePathname } from './router'
 
 const routes: Record<string, { title: string; page: () => React.JSX.Element }> = {
   '/': { title: 'Genmars Tech · Websites and business software', page: Home },
   '/services': { title: 'Services & pricing · Genmars Tech', page: Services },
+  '/how-we-work': { title: 'How we work · Genmars Tech', page: HowWeWork },
+  '/contact': { title: 'Contact us · Genmars Tech', page: Contact },
 }
 
 function App() {
@@ -26,7 +30,8 @@ function App() {
   }, [])
 
   return (
-    <div className="site">
+    // The homepage hero is dark; every other page uses the light theme.
+    <div className={path === '/' ? 'site' : 'site theme-light'}>
       <a href="#main" className="skip-link">
         Skip to content
       </a>
