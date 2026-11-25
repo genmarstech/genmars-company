@@ -30,8 +30,7 @@ function App() {
   }, [])
 
   return (
-    // The homepage hero is dark; every other page uses the light theme.
-    <div className={path === '/' ? 'site' : 'site theme-light'}>
+    <div className="site theme-light">
       <a href="#main" className="skip-link">
         Skip to content
       </a>

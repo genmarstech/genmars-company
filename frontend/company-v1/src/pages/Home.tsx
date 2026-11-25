@@ -55,9 +55,7 @@ export function Home() {
     <>
       {/* Hero */}
       <section id="top" className="hm-hero">
-        <div className="hm-hero-bg" aria-hidden="true" />
         <div className="wrap hm-hero-copy">
-          <p className="hm-kicker">Based in Nairobi, working with businesses everywhere</p>
           <h1 className="h1">
             Websites and business software that <span className="serif">just work.</span>
           </h1>
@@ -81,12 +79,15 @@ export function Home() {
             )}
           </div>
         </div>
-        <p className="hm-photo-credit">
-          Nairobi at dusk. Photo:{' '}
-          <a href="https://www.pexels.com/photo/stunning-nairobi-skyline-at-dusk-29069329/" target="_blank" rel="noopener noreferrer">
-            Ken Mwaura
-          </a>
-        </p>
+        <figure className="wrap hm-hero-photo">
+          <img src="/hero-nairobi.jpg" alt="Nairobi skyline at dusk" width={2400} height={1600} />
+          <figcaption>
+            Nairobi at dusk. Photo:{' '}
+            <a href="https://www.pexels.com/photo/stunning-nairobi-skyline-at-dusk-29069329/" target="_blank" rel="noopener noreferrer">
+              Ken Mwaura
+            </a>
+          </figcaption>
+        </figure>
       </section>
 
       {/* Services at a glance */}
@@ -110,7 +111,7 @@ export function Home() {
         <p>Starting prices. You get a written, fixed quote after a free first conversation.</p>
       </section>
 
-      <div className="theme-light hm-light">
+      <div className="hm-light">
       {/* Who we work with */}
       <section aria-label="Who we work with" className="hm-strip">
         <div className="wrap hm-strip-inner">

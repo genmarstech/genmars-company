@@ -13,6 +13,7 @@ const values = [
 export function SiteFooter() {
   return (
     <footer className="sf">
+      <div className="sf-band-wrap">
       <div className="wrap sf-band">
         <div className="sf-logo">
           <LogoMark size={40} />
@@ -33,6 +34,7 @@ export function SiteFooter() {
         <Link to="/contact" className="btn sf-cta">
           Get a quote <Icon name="arrow" size={18} />
         </Link>
+      </div>
       </div>
 
       <div className="wrap sf-inner">
