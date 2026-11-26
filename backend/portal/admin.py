@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils import timezone
-from .models import ClientNote, Invoice, Message, Milestone, Project, ProjectLink, StaffRate, Task, TimeEntry
+from .models import (
+    ClientNote, Invoice, Message, Milestone, Order, OrderUpdate, Project, ProjectLink, ServiceOffering, StaffRate, Task, TimeEntry,
+)
 
 
 class MilestoneInline(admin.TabularInline):
@@ -88,3 +90,27 @@ class StaffRateAdmin(admin.ModelAdmin):
 class ClientNoteAdmin(admin.ModelAdmin):
     list_display = ['client', 'author', 'pinned', 'created_at']
     search_fields = ['body']
+
+
+@admin.register(ServiceOffering)
+class ServiceOfferingAdmin(admin.ModelAdmin):
+    list_display = ['name', 'starting_price', 'billing', 'deposit_percent', 'is_active', 'order']
+    list_editable = ['starting_price', 'is_active', 'order']
+    prepopulated_fields = {'slug': ['name']}
+
+
+class OrderUpdateInline(admin.TabularInline):
+    model = OrderUpdate
+    extra = 0
+    fields = ['created_at', 'author', 'kind', 'status', 'body', 'internal']
+    readonly_fields = ['created_at']
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['number', 'client', 'service_name', 'status', 'quoted_price', 'assignee', 'created_at']
+    list_filter = ['status', 'service']
+    search_fields = ['number', 'client__email', 'client__full_name', 'brief']
+    autocomplete_fields = ['client', 'assignee', 'project']
+    readonly_fields = ['number', 'created_at', 'updated_at']
+    inlines = [OrderUpdateInline]

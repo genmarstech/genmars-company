@@ -8,12 +8,12 @@ import { MOD_KEY, openPalette } from '../team/paletteKeys'
 import { TimerChip } from '../team/Timer'
 import './portal.css'
 
-type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' | 'clock' }
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' | 'clock' | 'cart' }
 
 const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
   { to: '/portal/projects', label: 'Projects', icon: 'code' },
-  { to: '/portal/requests', label: 'New request', icon: 'mail' },
+  { to: '/portal/orders', label: 'Orders', icon: 'cart' },
   { to: '/portal/invoices', label: 'Invoices', icon: 'card' },
   { to: '/portal/messages', label: 'Messages', icon: 'chat' },
   { to: '/portal/settings', label: 'Settings', icon: 'gear' },
@@ -24,12 +24,14 @@ const teamNav: NavItem[] = [
   { to: '/team/work', label: 'My work', icon: 'check' },
   { to: '/team/clients', label: 'Clients', icon: 'team' },
   { to: '/team/projects', label: 'Projects', icon: 'code' },
+  { to: '/team/orders', label: 'Orders', icon: 'cart' },
   { to: '/team/leads', label: 'Leads', icon: 'mail' },
   { to: '/team/pipeline', label: 'Pipeline', icon: 'flow' },
   { to: '/team/time', label: 'Time & profit', icon: 'clock' },
   { to: '/team/finance', label: 'Finance', icon: 'chart' },
   { to: '/team/invoices', label: 'Invoices', icon: 'card' },
   { to: '/team/messages', label: 'Messages', icon: 'chat' },
+  { to: '/team/services', label: 'Services & prices', icon: 'gear' },
   { to: '/team/brand', label: 'Brand kit', icon: 'pen' },
 ]
 

@@ -97,6 +97,8 @@ export type Summary = {
   unread_messages: number
   projects: Project[]
   activity: { kind: 'milestone' | 'message'; text: string; project: string; at: string }[]
+  open_orders: number
+  quotes_waiting: { id: number; number: string; service: string; price: string; valid_until: string | null }[]
 }
 
 export function formatDate(value: string | null, withYear = true) {

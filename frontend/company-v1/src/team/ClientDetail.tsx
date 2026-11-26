@@ -11,6 +11,7 @@ import type { ActivityEvent, ClientNote, ClientOverview } from './types'
 const KIND_LABEL: Record<ActivityEvent['kind'], string> = {
   account: 'Account',
   lead: 'Brief',
+  order: 'Order',
   project: 'Project',
   milestone: 'Milestone',
   invoice: 'Invoice',
@@ -22,7 +23,7 @@ const KIND_LABEL: Record<ActivityEvent['kind'], string> = {
 
 const FILTERS: { label: string; kinds: ActivityEvent['kind'][] | null }[] = [
   { label: 'Everything', kinds: null },
-  { label: 'Work', kinds: ['project', 'milestone', 'task'] },
+  { label: 'Work', kinds: ['order', 'project', 'milestone', 'task'] },
   { label: 'Money', kinds: ['invoice', 'payment'] },
   { label: 'Conversations', kinds: ['message', 'note', 'lead'] },
 ]

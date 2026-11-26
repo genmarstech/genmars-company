@@ -107,6 +107,9 @@ export function Services() {
                 {s.from === null ? 'Quoted per project' : formatKes(s.from)}
                 {s.per && <span className="sv-per"> / {s.per}</span>}
               </span>
+              <Link to={`/portal/orders/new?service=${s.slug}`} className="btn btn--sm btn--ghost sv-order">
+                Order this <Icon name="arrow" size={14} />
+              </Link>
             </div>
           </article>
         ))}

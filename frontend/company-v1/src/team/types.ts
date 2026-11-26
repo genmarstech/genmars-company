@@ -8,6 +8,7 @@ export type TeamSummary = {
   new_clients_this_month: number
   at_risk: number
   new_enquiries: number
+  open_orders: number
   unpaid_invoices: number
   unanswered_messages: number
   activity: { date: string; milestones: number; messages: number }[]
@@ -147,6 +148,7 @@ export type Today = {
   my_minutes_today: number
   waiting_replies: Thread[]
   waiting_replies_count: number
+  orders_waiting: { id: number; number: string; service: string; client: string; status: string; status_label: string; assignee: string; days: number }[]
 }
 
 export type ClientNote = { id: number; client: number; body: string; pinned: boolean; author_name: string; is_mine: boolean; created_at: string }
@@ -176,11 +178,11 @@ export type ClientOverview = {
 
 export type ActivityEvent = {
   at: string
-  kind: 'account' | 'lead' | 'project' | 'milestone' | 'invoice' | 'payment' | 'message' | 'note' | 'task'
+  kind: 'account' | 'lead' | 'order' | 'project' | 'milestone' | 'invoice' | 'payment' | 'message' | 'note' | 'task'
   title: string
   detail: string
   link: string
   all_day: boolean
 }
 
-export type SearchResult = { kind: 'client' | 'project' | 'invoice' | 'lead' | 'task'; id: number; title: string; subtitle: string; url: string }
+export type SearchResult = { kind: 'client' | 'project' | 'invoice' | 'lead' | 'order' | 'task'; id: number; title: string; subtitle: string; url: string }
