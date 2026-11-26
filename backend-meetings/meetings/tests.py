@@ -225,7 +225,9 @@ class MeetingsTests(APITestCase):
     def test_lists_and_search(self):
         mid = self.schedule().data['id']
         Point.objects.create(meeting_id=mid, kind='decision', title='Move launch to March', status='proposed')
-        self.assertEqual([m['id'] for m in self.client.get('/api/v1/meetings/?view=upcoming').data], [mid])
+        upcoming = self.client.get('/api/v1/meetings/?view=upcoming').data
+        self.assertEqual([m['id'] for m in upcoming], [mid])
+        self.assertEqual(len(upcoming[0]['people']), 3)
         self.assertEqual(self.client.get('/api/v1/meetings/?view=history').data, [])
         self.assertEqual(len(self.client.get('/api/v1/meetings/?q=launch').data), 1)
         self.assertEqual(len(self.client.get(f'/api/v1/meetings/?project={self.project.id}').data), 1)
@@ -334,6 +336,20 @@ class MeetingsTests(APITestCase):
         self.assertEqual([s['full_name'] for s in data['staff']], ['Edwin Mwangi', 'Grace Otieno', 'Owner Person'])
         self.assertEqual([p['name'] for p in data['projects']], ['Website redesign'])
         self.assertFalse(data['me']['is_owner'])
+
+    def test_company_wide_decisions_and_actions(self):
+        mid = self.schedule().data['id']
+        Point.objects.create(meeting_id=mid, kind='decision', title='Use Postgres', status='approved')
+        Point.objects.create(meeting_id=mid, kind='decision', title='Hire a designer', status='proposed')
+        Point.objects.create(meeting_id=mid, kind='problem', title='Slow site', status='open')
+        decisions = self.client.get('/api/v1/meetings/decisions/').data
+        self.assertEqual({d['title'] for d in decisions}, {'Use Postgres', 'Hire a designer'})
+        self.assertEqual(decisions[0]['meeting_title'], 'Sprint review')
+        self.assertEqual([d['title'] for d in self.client.get('/api/v1/meetings/decisions/?status=approved').data], ['Use Postgres'])
+        ActionItem.objects.create(meeting_id=mid, title='Mine', assignee=self.edwin)
+        ActionItem.objects.create(meeting_id=mid, title='Theirs done', assignee=self.grace, status='done')
+        self.assertEqual([a['title'] for a in self.client.get('/api/v1/meetings/actions/?mine=1').data], ['Mine'])
+        self.assertEqual([a['title'] for a in self.client.get('/api/v1/meetings/actions/?state=done').data], ['Theirs done'])
 
     def test_overview(self):
         self.connect()

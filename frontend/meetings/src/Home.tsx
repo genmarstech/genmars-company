@@ -361,3 +361,35 @@ function MiniCalendar() {
     </div>
   )
 }
+
+/** Everything coming up, grouped by day, with the same rows as the overview. */
+export function UpcomingPage() {
+  const { data, error } = useApi<(MeetingRow & { people: string[] })[]>('/api/v1/meetings/?view=upcoming')
+  const days = useMemo(() => {
+    const out: [string, (MeetingRow & { people: string[] })[]][] = []
+    for (const m of data ?? []) {
+      const label = new Date(m.scheduled_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+      const last = out[out.length - 1]
+      if (last && last[0] === label) last[1].push(m)
+      else out.push([label, [m]])
+    }
+    return out
+  }, [data])
+  return (
+    <Layout title="Upcoming" subtitle="Every meeting that hasn’t happened yet, soonest first." actions={<Link to="/?new=1" className="btn btn--sm">Schedule meeting</Link>}>
+      {!data ? (
+        <Loading error={error} />
+      ) : days.length === 0 ? (
+        <Panel>
+          <Empty>Nothing scheduled. Plan the next one from the overview.</Empty>
+        </Panel>
+      ) : (
+        days.map(([label, list]) => (
+          <Panel key={label} title={label}>
+            <UpcomingList meetings={list} />
+          </Panel>
+        ))
+      )}
+    </Layout>
+  )
+}
