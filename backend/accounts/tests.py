@@ -230,6 +230,7 @@ class OnboardingTests(APITestCase):
 @override_settings(
     GOOGLE_CLIENT_ID='cid.apps.googleusercontent.com', GOOGLE_CLIENT_SECRET='sec',
     GOOGLE_LOGIN_REDIRECT_URI='https://api.example.com/api/v1/auth/google/callback/', FRONTEND_URL='https://www.example.com',
+    MEETINGS_URL='https://meetings.example.com',
 )
 class GoogleLoginTests(APITestCase):
 
@@ -247,8 +248,8 @@ class GoogleLoginTests(APITestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def start(self, nonce='n' * 20, next_path='/portal'):
-        res = self.client.get('/api/v1/auth/google/start/', {'nonce': nonce, 'next': next_path})
+    def start(self, nonce='n' * 20, next_path='/portal', site='web'):
+        res = self.client.get('/api/v1/auth/google/start/', {'nonce': nonce, 'next': next_path, 'site': site})
         return parse_qs(urlparse(res.data['url']).query)['state'][0]
 
     def callback(self, state, code='c0de'):
@@ -285,6 +286,17 @@ class GoogleLoginTests(APITestCase):
     def test_next_must_stay_on_the_site(self):
         frag = parse_qs(urlparse(self.callback(self.start(next_path='//evil.example'))).fragment)
         self.assertNotIn('next', frag)
+
+    def test_meetings_site_is_for_existing_team_members_only(self):
+        loc = self.callback(self.start(site='meetings', next_path='/decisions'))
+        self.assertEqual(loc, 'https://meetings.example.com/auth/google#error=notteam')
+        self.assertFalse(User.objects.exists())
+        User.objects.create_user(email='wanjiru@example.com', password='S3cure-pass-123', full_name='W')
+        self.assertTrue(self.callback(self.start(site='meetings')).endswith('#error=notteam'))
+        User.objects.filter(email='wanjiru@example.com').update(is_staff=True)
+        loc = self.callback(self.start(site='meetings', next_path='/decisions'))
+        self.assertTrue(loc.startswith('https://meetings.example.com/auth/google#'))
+        self.assertEqual(parse_qs(urlparse(loc).fragment)['next'][0], '/decisions')
 
     @override_settings(GOOGLE_CLIENT_SECRET='')
     def test_says_when_not_set_up(self):

@@ -255,6 +255,8 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # The website, used to build links in emails (e.g. password reset).
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173' if DEBUG else 'https://www.genmars.co.ke').rstrip('/')
+# The team's meetings site (frontend/meetings); Google sign-in can return there too.
+MEETINGS_URL = os.getenv('MEETINGS_URL', 'http://localhost:5174' if DEBUG else 'https://meetings.genmars.co.ke').rstrip('/')
 
 # Where new website enquiries are sent.
 ENQUIRY_NOTIFY_EMAIL = os.getenv('ENQUIRY_NOTIFY_EMAIL', 'info@genmars.co.ke')

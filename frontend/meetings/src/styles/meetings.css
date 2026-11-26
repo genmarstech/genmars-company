@@ -671,3 +671,42 @@ body {
   font-size: 13.5px;
   color: var(--subtle);
 }
+
+/* Google sign-in */
+.ml-google {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--white);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.ml-google:hover {
+  border-color: rgba(47, 91, 245, 0.45);
+}
+.ml-google[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+.ml-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--subtle);
+}
+.ml-or::before,
+.ml-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}

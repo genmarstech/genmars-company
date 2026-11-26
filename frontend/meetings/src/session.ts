@@ -108,3 +108,47 @@ export async function login(email: string, password: string) {
 export function logout() {
   setSession({ token: null, user: null })
 }
+
+const GOOGLE_NONCE = 'genmars.google-nonce'
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  expired: 'That Google sign-in expired. Please try again.',
+  cancelled: 'Google sign-in was cancelled.',
+  failed: 'Google couldn’t confirm your account. Please try again or use your password.',
+  notteam: 'That Google account isn’t on the Genmars team. Use your team email, or ask an owner to add you.',
+  inactive: 'This account is switched off. Ask an owner if you think that’s a mistake.',
+}
+
+/** Send the browser to Google. The main API brings it back to /auth/google here, team accounts only. */
+export async function startGoogleSignIn(next = '') {
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(24)), (b) => b.toString(16).padStart(2, '0')).join('')
+  try {
+    sessionStorage.setItem(GOOGLE_NONCE, nonce)
+  } catch {
+    // without storage the return check below fails safely
+  }
+  const res = await apiFetch(`/api/v1/auth/google/start/?${new URLSearchParams({ nonce, next, site: 'meetings' })}`)
+  const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
+  if (!res.ok || !data.url) throw new ApiError(data.error || 'Couldn’t reach Google. Please try again.')
+  window.location.assign(data.url)
+}
+
+/** Back from Google: check this browser started the sign-in, then keep the token. Returns where to go next. */
+export async function finishGoogleSignIn(fragment: string) {
+  const p = new URLSearchParams(fragment.replace(/^#/, ''))
+  let expected = ''
+  try {
+    expected = sessionStorage.getItem(GOOGLE_NONCE) ?? ''
+    sessionStorage.removeItem(GOOGLE_NONCE)
+  } catch {
+    // treated as a mismatch below
+  }
+  const token = p.get('token')
+  if (!token || !expected || p.get('nonce') !== expected) throw new ApiError(GOOGLE_ERRORS[p.get('error') ?? ''] ?? GOOGLE_ERRORS.expired)
+  const res = await apiFetch('/api/v1/auth/users/me/', { headers: { Authorization: `Token ${token}` } })
+  if (!res.ok) throw new ApiError(GOOGLE_ERRORS.failed)
+  const user = (await res.json()) as User
+  if (!user.is_staff) throw new ApiError(GOOGLE_ERRORS.notteam)
+  setSession({ token, user })
+  return p.get('next') ?? ''
+}

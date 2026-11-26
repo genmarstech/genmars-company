@@ -7,6 +7,9 @@ our API token in the URL fragment (fragments are never sent to servers or logged
 
 The website also puts a random `nonce` into the state and checks it comes back, so nobody can sign a visitor
 into someone else's account with a crafted link.
+
+`site=meetings` sends people back to the meetings site instead. That site is for the team only, so there it signs
+in existing staff accounts and never creates new ones.
 """
 
 import json
@@ -61,6 +64,13 @@ def _http(method, url, form=None, params=None):
         raise GoogleError(f"Couldn't reach Google: {getattr(e, 'reason', e)}") from e
 
 
+SITES = {'web', 'meetings'}
+
+
+def landing(site):
+    return f"{settings.MEETINGS_URL if site == 'meetings' else settings.FRONTEND_URL}/auth/google"
+
+
 def safe_next(value):
     return value if isinstance(value, str) and value.startswith('/') and not value.startswith('//') else ''
 
@@ -110,7 +120,10 @@ class GoogleStartView(APIView):
         nonce = request.query_params.get('nonce', '')
         if not 16 <= len(nonce) <= 128:
             return Response({'error': 'Something went wrong. Please try again.'}, status=400)
-        state = signing.dumps({'n': nonce, 'next': safe_next(request.query_params.get('next')), 'r': secrets.token_urlsafe(8)}, salt=STATE_SALT)
+        site = request.query_params.get('site', 'web')
+        if site not in SITES:
+            site = 'web'
+        state = signing.dumps({'n': nonce, 'next': safe_next(request.query_params.get('next')), 's': site, 'r': secrets.token_urlsafe(8)}, salt=STATE_SALT)
         params = {
             'client_id': settings.GOOGLE_CLIENT_ID,
             'redirect_uri': settings.GOOGLE_LOGIN_REDIRECT_URI,
@@ -123,23 +136,30 @@ class GoogleStartView(APIView):
 
 
 class GoogleCallbackView(APIView):
-    """Google sends the browser here; it leaves for the website's /auth/google page either way."""
+    """Google sends the browser here; it leaves for the /auth/google page of the site that started, either way."""
 
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
 
     def get(self, request):
-        back = f"{settings.FRONTEND_URL}/auth/google"
         try:
             state = signing.loads(request.query_params.get('state', ''), salt=STATE_SALT, max_age=STATE_MAX_AGE)
         except signing.BadSignature:
-            return HttpResponseRedirect(f"{back}#error=expired")
+            return HttpResponseRedirect(f"{landing('web')}#error=expired")
+        back = landing(state.get('s'))
         if request.query_params.get('error') or not request.query_params.get('code'):
             return HttpResponseRedirect(f"{back}#error=cancelled")
         try:
-            user = account_for(verified_identity(request.query_params['code']))
+            claims = verified_identity(request.query_params['code'])
         except GoogleError:
             return HttpResponseRedirect(f"{back}#error=failed")
+        if state.get('s') == 'meetings':
+            # team only: no sign-ups through the meetings site
+            user = User.objects.filter(email__iexact=claims['email'], is_staff=True).first()
+            if not user:
+                return HttpResponseRedirect(f"{back}#error=notteam")
+        else:
+            user = account_for(claims)
         if not user.is_active:
             return HttpResponseRedirect(f"{back}#error=inactive")
         token, _ = Token.objects.get_or_create(user=user)

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { PrivacyPage, TermsPage } from './Legal'
-import { Login } from './Login'
+import { GoogleReturn, Login } from './Login'
 import { MeetingDetail } from './MeetingDetail'
 import { Home, UpcomingPage } from './Home'
 import { ActionsPage, CalendarPage, DecisionsPage, InsightsPage, RecordsPage, SettingsPage } from './Pages'
@@ -12,7 +12,7 @@ export default function App() {
   const { user } = useSession()
   const signedIn = !!user?.is_staff
   // anyone can read these, signed in or not (Google links to them from the consent screen)
-  const isPublic = path === '/login' || path === '/privacy' || path === '/terms'
+  const isPublic = path === '/login' || path === '/auth/google' || path === '/privacy' || path === '/terms'
 
   useEffect(() => {
     if (!signedIn && !isPublic) navigate(`/login?next=${encodeURIComponent(path + window.location.search)}`)
@@ -20,6 +20,7 @@ export default function App() {
 
   if (path === '/privacy') return <PrivacyPage />
   if (path === '/terms') return <TermsPage />
+  if (path === '/auth/google') return <GoogleReturn />
   if (path === '/login') return <Login />
   if (!signedIn) return null
   const meeting = path.match(/^\/(\d+)$/)
