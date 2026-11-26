@@ -244,7 +244,7 @@ function ProfitTable({ data }: { data: Profitability }) {
   return (
     <Panel>
       <div className="pt-table-wrap">
-        <table className="pt-table tm-profit">
+        <table className="pt-table pt-stack tm-profit">
           <thead>
             <tr>
               <th scope="col">Project</th>
@@ -259,7 +259,7 @@ function ProfitTable({ data }: { data: Profitability }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.id}>
-                <td>
+                <td data-label="Project">
                   <Link to={`/team/projects/${p.id}`}>
                     <strong>{p.name}</strong>
                   </Link>
@@ -267,15 +267,15 @@ function ProfitTable({ data }: { data: Profitability }) {
                     {p.client} · {p.status_label}
                   </span>
                 </td>
-                <td className="pt-num">{kes(p.value)}</td>
-                <td className="pt-num">{kes(p.paid)}</td>
-                <td className="pt-num">{hm(p.minutes)}</td>
-                <td className="pt-num">{kes(p.cost)}</td>
-                <td className={`pt-num${Number(p.profit) < 0 ? ' tm-bad' : ''}`}>
+                <td data-label="Worth" className="pt-num">{kes(p.value)}</td>
+                <td data-label="Paid" className="pt-num">{kes(p.paid)}</td>
+                <td data-label="Hours" className="pt-num">{hm(p.minutes)}</td>
+                <td data-label="Time cost" className="pt-num">{kes(p.cost)}</td>
+                <td data-label="Profit" className={`pt-num${Number(p.profit) < 0 ? ' tm-bad' : ''}`}>
                   {kes(p.profit)}
                   {p.margin !== null && <span className="pt-muted pt-small pt-block">{p.margin}%</span>}
                 </td>
-                <td>
+                <td data-label="Budget used">
                   <UsedBar pct={p.budget_used} />
                 </td>
               </tr>
@@ -284,15 +284,15 @@ function ProfitTable({ data }: { data: Profitability }) {
           <tfoot>
             <tr>
               <th scope="row">All projects</th>
-              <td className="pt-num">{kes(t.value)}</td>
-              <td className="pt-num">{kes(t.paid)}</td>
-              <td className="pt-num">{hm(t.minutes)}</td>
-              <td className="pt-num">{kes(t.cost)}</td>
-              <td className={`pt-num${Number(t.profit) < 0 ? ' tm-bad' : ''}`}>
+              <td data-label="Worth" className="pt-num">{kes(t.value)}</td>
+              <td data-label="Paid" className="pt-num">{kes(t.paid)}</td>
+              <td data-label="Hours" className="pt-num">{hm(t.minutes)}</td>
+              <td data-label="Time cost" className="pt-num">{kes(t.cost)}</td>
+              <td data-label="Profit" className={`pt-num${Number(t.profit) < 0 ? ' tm-bad' : ''}`}>
                 {kes(t.profit)}
                 {t.margin !== null && <span className="pt-muted pt-small pt-block">{t.margin}%</span>}
               </td>
-              <td />
+              <td data-label="Budget used" />
             </tr>
           </tfoot>
         </table>

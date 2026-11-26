@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { logout, useSession } from '../auth/session'
 import { Icon, LogoMark } from '../components/Icon'
 import { Link } from '../components/Link'
@@ -37,6 +37,20 @@ const teamNav: NavItem[] = [
   { to: '/team/brand', label: 'Brand kit', icon: 'pen' },
 ]
 
+// Phones and small tablets get the off-canvas menu and a compact top bar.
+const NARROW = '(max-width: 860px)'
+function useNarrow() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia(NARROW)
+      mq.addEventListener('change', cb)
+      return () => mq.removeEventListener('change', cb)
+    },
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  )
+}
+
 export function PortalLayout({ title, subtitle, actions, children, nav = clientNav, role = 'Client', search = false }: {
   search?: boolean
   title: string
@@ -49,6 +63,25 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
   const { user } = useSession()
   const path = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const narrow = useNarrow()
+
+  // close the menu on navigation or when the screen crosses the breakpoint
+  const menuKey = `${path}|${narrow}`
+  const [openedAt, setOpenedAt] = useState(menuKey)
+  if (openedAt !== menuKey) {
+    setOpenedAt(menuKey)
+    setMenuOpen(false)
+  }
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false)
+    document.addEventListener('keydown', onKey)
+    document.documentElement.classList.add('pt-lock')
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.documentElement.classList.remove('pt-lock')
+    }
+  }, [menuOpen])
   const initials = (user?.full_name ?? '?')
     .split(' ')
     .map((p) => p[0])
@@ -61,7 +94,7 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
 
   return (
     <div className={`pt${menuOpen ? ' pt--menu' : ''}`}>
-      <aside className="pt-side">
+      <aside className="pt-side" id="pt-side" inert={narrow && !menuOpen ? true : undefined}>
         <Link to="/" className="pt-brand" aria-label="Genmars Tech home">
           <LogoMark size={34} />
           <span className="pt-word">
@@ -120,30 +153,43 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
         </div>
       </aside>
 
+      {narrow && menuOpen && <button type="button" className="pt-scrim" aria-label="Close menu" tabIndex={-1} onClick={() => setMenuOpen(false)} />}
+
       <div className="pt-main">
-        <header className="pt-top">
+        <div className="pt-mbar">
           <button
             type="button"
             className="pt-icon-btn pt-menu-btn"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
+            aria-controls="pt-side"
             onClick={() => setMenuOpen((o) => !o)}
           >
             <Icon name={menuOpen ? 'close' : 'menu'} size={20} />
           </button>
+          <Link to={home} className="pt-mbar-brand" aria-label={`${role === 'Client' ? 'Portal' : 'Team'} home`}>
+            <LogoMark size={28} />
+          </Link>
+          <div className="pt-mbar-tools">
+            {search && narrow && <TimerChip />}
+            {search && (
+              <button type="button" className="pt-icon-btn" aria-label="Search" onClick={openPalette}>
+                <Icon name="search" size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+        <header className="pt-top">
           <div className="pt-head">
             <h1>{title}</h1>
             {subtitle && <p>{subtitle}</p>}
           </div>
-          <div className="pt-actions">
-            {search && <TimerChip />}
-            {search && (
-              <button type="button" className="pt-icon-btn pt-search-sm" aria-label="Search" onClick={openPalette}>
-                <Icon name="search" size={18} />
-              </button>
-            )}
-            {actions}
-          </div>
+          {(actions || (search && !narrow)) && (
+            <div className="pt-actions">
+              {search && !narrow && <TimerChip />}
+              {actions}
+            </div>
+          )}
         </header>
         <main id="main" className="pt-content">
           {children}

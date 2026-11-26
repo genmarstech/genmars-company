@@ -697,6 +697,10 @@
     grid-template-columns: 1fr;
   }
 }
+.pt-mbar,
+.pt-scrim {
+  display: none;
+}
 @media (max-width: 860px) {
   .pt {
     grid-template-columns: minmax(0, 1fr);
@@ -705,24 +709,98 @@
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 60;
-    width: 260px;
+    width: min(280px, 84vw);
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     transform: translateX(-100%);
-    transition: transform 0.2s ease;
-    box-shadow: 0 0 60px rgba(15, 30, 70, 0.25);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .pt--menu .pt-side {
     transform: none;
+    box-shadow: 0 0 60px rgba(15, 30, 70, 0.22);
   }
-  .pt-menu-btn {
+  .pt-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    border: 0;
+    padding: 0;
+    background: rgba(15, 30, 70, 0.28);
+    cursor: default;
+  }
+  .pt-nav-link {
+    min-height: 44px;
+  }
+
+  /* compact bar: menu, home, timer and search stay in reach while scrolling */
+  .pt-mbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 60px;
+    padding: 0 16px;
+    padding-top: env(safe-area-inset-top);
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+  }
+  .pt-mbar .pt-icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .pt-mbar .pt-menu-btn {
     display: inline-flex;
   }
+  .pt-mbar-brand {
+    display: inline-flex;
+    align-items: center;
+  }
+  .pt-mbar-tools {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  /* a running timer needs the room more than the logo does */
+  .pt-mbar:has(.tm-timer) .pt-mbar-brand {
+    display: none;
+  }
   .pt-top {
-    flex-wrap: wrap;
-    padding-top: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 20px 16px 4px;
+  }
+  .pt-head h1 {
+    font-size: 24px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
   }
   .pt-actions {
-    width: 100%;
     justify-content: flex-start;
+  }
+  .pt-actions > * {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .pt-content {
+    padding: 16px 16px 40px;
+    gap: 16px;
+  }
+}
+html.pt-lock,
+html.pt-lock body {
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pt-side {
+    transition: none;
   }
 }
 @media (max-width: 480px) {
@@ -760,4 +838,87 @@
   font-size: 14px;
   color: var(--text-2);
   white-space: pre-wrap;
+}
+
+/* Phones: wide tables become one card per row, each value labelled. */
+@media (max-width: 640px) {
+  .pt-stack,
+  .pt-stack tbody,
+  .pt-stack tfoot,
+  .pt-stack tr,
+  .pt-stack td,
+  .pt-stack th {
+    display: block;
+  }
+  .pt-stack thead {
+    display: none;
+  }
+  .pt-stack tr {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .pt-stack tbody tr:first-child {
+    border-top: 0;
+    padding-top: 2px;
+  }
+  .pt-stack tr:last-child {
+    padding-bottom: 0;
+  }
+  .pt-stack td,
+  .pt-stack th {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+  .pt-stack td:first-child,
+  .pt-stack th:first-child {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  .pt-stack td[data-label]:not(:first-child) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: end;
+    column-gap: 16px;
+    min-height: 30px;
+    padding: 3px 0;
+    text-align: right !important;
+  }
+  .pt-stack td[data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    grid-row: 1 / span 3;
+    justify-self: start;
+    font-size: 13px;
+    color: var(--subtle);
+    text-align: left;
+  }
+  .pt-stack td.pt-num {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 860px) {
+  /* 16px stops iOS zooming into a field on focus */
+  .pt input:not([type='checkbox']):not([type='radio']),
+  .pt select,
+  .pt textarea {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pt-panel {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  .pt-compose {
+    flex-wrap: wrap;
+  }
+  .pt-compose select {
+    flex: 1 1 100%;
+  }
+  .pt-thread {
+    max-height: 62dvh;
+  }
 }

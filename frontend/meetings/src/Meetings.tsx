@@ -238,7 +238,7 @@ export function History() {
         <Empty>{term || status || category || project || mine ? 'No meetings match.' : 'Finished meetings will be listed here with their records.'}</Empty>
       ) : (
         <div className="pt-table-wrap">
-          <table className="pt-table">
+          <table className="pt-table pt-stack">
             <thead>
               <tr>
                 <th scope="col">Meeting</th>
@@ -252,7 +252,7 @@ export function History() {
             <tbody>
               {data.map((m) => (
                 <tr key={m.id}>
-                  <td>
+                  <td data-label="Meeting">
                     <Link to={`/${m.id}`} className="mt-cell-link">
                       <strong>{m.title}</strong>
                       <span className="pt-muted pt-small">
@@ -260,16 +260,16 @@ export function History() {
                       </span>
                     </Link>
                   </td>
-                  <td className="pt-small tm-nowrap">
+                  <td data-label="When" className="pt-small tm-nowrap">
                     {formatDate(m.scheduled_start)}
                     <span className="pt-muted pt-block">{timeRange(m)}</span>
                   </td>
-                  <td className="pt-small">{m.organizer_name || '—'}</td>
-                  <td className="pt-num">{m.participant_count}</td>
-                  <td>
+                  <td data-label="Organizer" className="pt-small">{m.organizer_name || '—'}</td>
+                  <td data-label="People" className="pt-num">{m.participant_count}</td>
+                  <td data-label="Record">
                     {m.status === 'cancelled' ? <StatusBadge tone={statusTone[m.status]}>{m.status_label}</StatusBadge> : <StatusBadge tone={reportTone[m.report_status]}>{m.report_label}</StatusBadge>}
                   </td>
-                  <td className="pt-num">{m.open_actions || <span className="pt-muted">0</span>}</td>
+                  <td data-label="Open actions" className="pt-num">{m.open_actions || <span className="pt-muted">0</span>}</td>
                 </tr>
               ))}
             </tbody>

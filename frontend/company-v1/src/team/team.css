@@ -294,6 +294,21 @@
 .tm-threads {
   padding: 8px;
 }
+.tm-inbox-back {
+  display: none;
+  align-items: center;
+  min-height: 36px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.tm-inbox-back:hover {
+  color: var(--cobalt);
+}
 .tm-threads ul {
   list-style: none;
   margin: 0;
@@ -351,6 +366,14 @@
 @media (max-width: 900px) {
   .tm-inbox {
     grid-template-columns: 1fr;
+  }
+  /* one pane at a time: the list, or the open conversation */
+  .tm-inbox:not(.tm-inbox--open) .pt-chat,
+  .tm-inbox--open .tm-threads {
+    display: none;
+  }
+  .tm-inbox-back {
+    display: inline-flex;
   }
   .tm-leads {
     grid-template-columns: 1fr;
@@ -1192,9 +1215,6 @@ kbd {
   text-align: center;
   color: var(--muted);
 }
-.pt-search-sm {
-  display: none;
-}
 .cp-backdrop {
   position: fixed;
   inset: 0;
@@ -1346,9 +1366,6 @@ kbd {
   }
 }
 @media (max-width: 860px) {
-  .pt-search-sm {
-    display: inline-flex;
-  }
   .tm-hide-sm {
     display: none;
   }
@@ -1381,7 +1398,7 @@ kbd {
   .cp-foot > span {
     display: none;
   }
-  .tm-prio > li {
+  .tm-prio > li:not(.tm-prio-task) {
     flex-wrap: wrap;
   }
 }
@@ -1389,4 +1406,52 @@ kbd {
 /* keep the chart's screen-reader table from widening the page */
 table.sr-only {
   display: block;
+}
+
+@media (max-width: 640px) {
+  .pt-stack .tm-row-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .pt-stack .tm-row-actions a {
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .pt-stack td.tm-progress-cell {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0;
+    min-width: 0;
+  }
+  .pt-stack td.tm-progress-cell::before {
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  /* swipe between pipeline stages; the next column peeks in */
+  .tm-board {
+    grid-template-columns: repeat(5, 82%);
+    margin: 0 -16px;
+    padding: 0 16px 8px;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+    overscroll-behavior-x: contain;
+  }
+  .tm-col {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .cp-backdrop {
+    padding: 12px 12px 16px;
+  }
+  .cp {
+    max-height: 78dvh;
+  }
 }

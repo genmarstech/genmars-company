@@ -27,7 +27,7 @@ export function Clients() {
           <Empty>No clients{q ? ' match that search' : ' yet'}.</Empty>
         ) : (
           <div className="pt-table-wrap">
-            <table className="pt-table">
+            <table className="pt-table pt-stack">
               <thead>
                 <tr>
                   <th scope="col">Client</th>
@@ -43,18 +43,18 @@ export function Clients() {
               <tbody>
                 {data.map((c) => (
                   <tr key={c.id} className="tm-click" onClick={(e) => (e.target as HTMLElement).closest('a') || navigate(`/team/clients/${c.id}`)}>
-                    <td>
+                    <td data-label="Client">
                       <Link to={`/team/clients/${c.id}`}>
                         <strong>{c.full_name}</strong>
                       </Link>
                       <span className="pt-muted pt-small pt-block">{c.email}</span>
                     </td>
-                    <td>{c.company_name || '—'}</td>
-                    <td>{c.phone_number || '—'}</td>
-                    <td className="pt-num">
+                    <td data-label="Company">{c.company_name || '—'}</td>
+                    <td data-label="Phone">{c.phone_number || '—'}</td>
+                    <td data-label="Projects" className="pt-num">
                       {c.active_projects} active / {c.project_count}
                     </td>
-                    <td>{formatDate(c.date_joined)}</td>
+                    <td data-label="Joined">{formatDate(c.date_joined)}</td>
                     <td className="tm-row-actions">
                       <Link to={`/team/clients/${c.id}`}>Open</Link>
                       <Link to={`/team/projects?client=${c.id}`}>Projects</Link>
