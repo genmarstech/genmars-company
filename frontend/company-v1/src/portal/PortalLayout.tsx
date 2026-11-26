@@ -8,7 +8,7 @@ import { MOD_KEY, openPalette } from '../team/paletteKeys'
 import { TimerChip } from '../team/Timer'
 import './portal.css'
 
-type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' | 'clock' | 'cart' }
+type NavItem = { to: string; label: string; icon: 'layout' | 'code' | 'card' | 'chat' | 'gear' | 'team' | 'mail' | 'check' | 'flow' | 'chart' | 'pen' | 'clock' | 'cart' | 'video' }
 
 const clientNav: NavItem[] = [
   { to: '/portal', label: 'Dashboard', icon: 'layout' },
@@ -22,6 +22,7 @@ const clientNav: NavItem[] = [
 const teamNav: NavItem[] = [
   { to: '/team', label: 'Today', icon: 'layout' },
   { to: '/team/work', label: 'My work', icon: 'check' },
+  { to: '/team/meetings', label: 'Meetings', icon: 'video' },
   { to: '/team/clients', label: 'Clients', icon: 'team' },
   { to: '/team/projects', label: 'Projects', icon: 'code' },
   { to: '/team/orders', label: 'Orders', icon: 'cart' },

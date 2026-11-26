@@ -11,6 +11,7 @@ type Item = { key: string; group: string; title: string; subtitle?: string; url:
 const PAGES: { key: string; title: string; url: string }[] = [
   { key: 't', title: 'Today', url: '/team' },
   { key: 'w', title: 'My work', url: '/team/work' },
+  { key: 'e', title: 'Meetings', url: '/team/meetings' },
   { key: 'c', title: 'Clients', url: '/team/clients' },
   { key: 'p', title: 'Projects', url: '/team/projects' },
   { key: 'l', title: 'Leads', url: '/team/leads' },
@@ -25,6 +26,7 @@ const PAGES: { key: string; title: string; url: string }[] = [
 const ACTIONS: { title: string; url: string; hint?: string }[] = [
   { title: 'New task', url: '/team/work?new=1', hint: 'N' },
   { title: 'Log time', url: '/team/time' },
+  { title: 'Schedule a meeting', url: '/team/meetings?new=1' },
   { title: 'New project', url: '/team/projects?new=1' },
   { title: 'New invoice', url: '/team/invoices?new=1' },
   { title: 'Orders needing a quote', url: '/team/orders?view=needs_quote' },
@@ -37,6 +39,7 @@ const KIND_GROUP: Record<SearchResult['kind'], string> = {
   lead: 'Leads',
   order: 'Orders',
   task: 'Tasks',
+  meeting: 'Meetings',
 }
 
 

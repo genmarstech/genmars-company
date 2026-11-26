@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'accounts',
     'applications_communications',
     'portal',
+    'meetings',
 ]
 
 MIDDLEWARE = [
@@ -261,3 +262,12 @@ ENQUIRY_NOTIFY_EMAIL = os.getenv('ENQUIRY_NOTIFY_EMAIL', 'info@genmars.co.ke')
 
 # Cost of an hour of team time (KES) when a person has no rate of their own set; used for project profitability.
 TEAM_DEFAULT_HOURLY_COST = int(os.getenv('TEAM_DEFAULT_HOURLY_COST', '1000'))
+
+# Google Meet + Calendar for the team's Meetings tab. The OAuth client is a "Web application" client in
+# Google Cloud; GOOGLE_REDIRECT_URI must be listed there exactly, e.g.
+# https://api.genmars.co.ke/api/v1/integrations/google/callback/
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', '')
+# Fernet key that encrypts stored Google tokens; derived from DJANGO_SECRET_KEY when empty.
+GOOGLE_TOKEN_KEY = os.getenv('GOOGLE_TOKEN_KEY', '')

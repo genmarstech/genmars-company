@@ -35,5 +35,7 @@ urlpatterns = [
     path('api/v1/enquiries/', include('applications_communications.urls')),
     path('api/v1/portal/', include('portal.urls')),
     path('api/v1/team/', include('portal.team_urls')),
+    path('api/v1/meetings/', include('meetings.urls')),
+    path('api/v1/integrations/google/', include('meetings.google_urls')),
     path('api/v1/', include(catalogue.urls)),
 ]
