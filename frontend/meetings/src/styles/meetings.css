@@ -569,3 +569,105 @@ body {
   color: var(--cobalt);
 }
 
+
+/* ---------------------------------------------------------------- legal pages */
+.ml-login {
+  grid-template-rows: 1fr auto;
+}
+.lg-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--midnight);
+}
+.lg-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 3vw, 40px);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.lg-nav {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+}
+.lg-nav a,
+.lg-foot a {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.lg-nav a:hover,
+.lg-foot a:hover {
+  color: var(--cobalt);
+}
+.lg-doc {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 16px 64px;
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+.lg-doc h1 {
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+.lg-intro {
+  margin-top: 10px;
+  font-size: 17px;
+  color: var(--muted);
+}
+.lg-meta {
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--subtle);
+}
+.lg-doc h2 {
+  margin: 36px 0 10px;
+  font-size: 19px;
+  font-weight: 650;
+  color: var(--white);
+}
+.lg-doc p + p,
+.lg-doc ul + p {
+  margin-top: 12px;
+}
+.lg-doc ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lg-doc strong {
+  color: var(--white);
+  font-weight: 600;
+}
+.lg-doc a {
+  color: var(--cobalt);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lg-doc code {
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.lg-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  padding: 20px 16px 28px;
+  font-size: 13.5px;
+  color: var(--subtle);
+}
