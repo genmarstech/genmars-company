@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-from portal.models import Project, Task
+from company.models import Project, Task, User
 
 
 class GoogleConnection(models.Model):
@@ -23,7 +22,7 @@ class GoogleConnection(models.Model):
     scopes = models.TextField(blank=True, default='')
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.CONNECTED)
     last_error = models.CharField(max_length=255, blank=True, default='')
-    connected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='google_connections')
+    connected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='google_connections')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -76,7 +75,7 @@ class Meeting(models.Model):
     kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.SCHEDULED)
     category = models.CharField(max_length=10, choices=Category.choices, default=Category.INTERNAL, db_index=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PLANNED, db_index=True)
-    organizer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='organized_meetings')
+    organizer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='organized_meetings')
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
 
     scheduled_start = models.DateTimeField(db_index=True)
@@ -103,7 +102,7 @@ class Meeting(models.Model):
     # the meeting record
     summary = models.TextField(blank=True, default='', help_text='Executive summary')
     report_status = models.CharField(max_length=10, choices=Report.choices, default=Report.DRAFT)
-    report_approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_meeting_reports')
+    report_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_meeting_reports')
     report_approved_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -141,7 +140,7 @@ class Participant(models.Model):
         DECLINED = 'declined', 'Declined'
 
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='meeting_invites')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='meeting_invites')
     email = models.EmailField()
     name = models.CharField(max_length=150, blank=True, default='')
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.ATTENDEE)
@@ -180,7 +179,7 @@ class AgendaItem(models.Model):
 
 class MeetingNote(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='notes')
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='meeting_notes')
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='meeting_notes')
     body = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -225,10 +224,10 @@ class Point(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices)
     # a proposed solution answers a problem
     problem = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='solutions')
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_meeting_points')
-    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_meeting_points')
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_meeting_points')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_meeting_points')
     approved_at = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='+')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -250,12 +249,12 @@ class ActionItem(models.Model):
     decision = models.ForeignKey(Point, on_delete=models.SET_NULL, null=True, blank=True, related_name='actions')
     title = models.CharField(max_length=200)
     notes = models.TextField(blank=True, default='')
-    assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_actions')
+    assignee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_actions')
     due_date = models.DateField(null=True, blank=True)
     priority = models.CharField(max_length=8, choices=Task.Priority.choices, default=Task.Priority.NORMAL)
     status = models.CharField(max_length=8, choices=Status.choices, default=Status.TODO, db_index=True)
     task = models.OneToOneField(Task, on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_action')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='+')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -298,7 +297,7 @@ class Activity(models.Model):
     """Audit trail for one meeting."""
 
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='activity')
-    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     text = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 

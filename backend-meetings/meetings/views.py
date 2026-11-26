@@ -4,7 +4,6 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
@@ -17,12 +16,10 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from portal.models import Task
-from portal.team import Staff
+from company.models import Project, Task, User
+from company.permissions import Owner, Staff
 from . import google, sync
 from .models import ActionItem, AgendaItem, Artifact, GoogleConnection, Meeting, MeetingNote, Participant, Point, log
-
-User = get_user_model()
 
 
 def name_of(user):
@@ -666,7 +663,7 @@ class ActionViewSet(MeetingChild):
                 message=(
                     f"Hi {name_of(item.assignee).split()[0]},\n\nAn action item from the meeting \"{meeting.title}\" is now your task: "
                     f"\"{item.title}\".{f' Due {item.due_date:%d %b %Y}.' if item.due_date else ''}\n\n"
-                    f"See your work: {settings.FRONTEND_URL}/team/work\n"
+                    f"See it in the meeting: {settings.MEETINGS_URL}/{meeting.id}\n"
                 ),
                 from_email=None,
                 recipient_list=[item.assignee.email],
@@ -676,6 +673,40 @@ class ActionViewSet(MeetingChild):
 
 
 # ---------------------------------------------------------------- overview
+
+class UpcomingSerializer(MeetingListSerializer):
+    people = serializers.SerializerMethodField()
+
+    class Meta(MeetingListSerializer.Meta):
+        fields = MeetingListSerializer.Meta.fields + ['people']
+
+    def get_people(self, m):
+        people = sorted(m.participants.all(), key=lambda p: p.role != Participant.Role.ORGANIZER)
+        return [p.name or p.email for p in people]
+
+
+def trends(now, weeks=8):
+    """Weekly counts for the overview's small charts, oldest first. Upcoming looks ahead; the rest look back."""
+    week = timedelta(days=7)
+    start = now - week * weeks
+    live = Meeting.objects.exclude(status=Meeting.Status.CANCELLED)
+
+    def bucket(values, origin):
+        counts = [0] * weeks
+        for v in values:
+            if v is not None:
+                i = int((v - origin) / week)
+                if 0 <= i < weeks:
+                    counts[i] += 1
+        return counts
+
+    return {
+        'upcoming': bucket(live.filter(scheduled_start__gte=now, scheduled_start__lt=now + week * weeks).values_list('scheduled_start', flat=True), now),
+        'held': bucket(live.filter(scheduled_start__gte=start, scheduled_start__lt=now).values_list('scheduled_start', flat=True), start),
+        'completed': bucket(live.filter(status=Meeting.Status.COMPLETED, scheduled_start__gte=start).values_list('scheduled_start', flat=True), start),
+        'records': bucket(Meeting.objects.filter(report_approved_at__gte=start).values_list('report_approved_at', flat=True), start),
+    }
+
 
 class OverviewView(APIView):
     """The Meetings tab's top: counts, what's next, my open action items and the Google connection."""
@@ -693,8 +724,13 @@ class OverviewView(APIView):
         mine = open_actions.filter(assignee=request.user).select_related('meeting', 'task', 'assignee')
         upcoming = (
             Meeting.objects.filter(status__in=[Meeting.Status.PLANNED, Meeting.Status.LIVE]).select_related('organizer', 'project__client')
-            .annotate(participant_count=Count('participants', distinct=True)).order_by('scheduled_start')
+            .prefetch_related('participants').annotate(participant_count=Count('participants', distinct=True)).order_by('scheduled_start')
         )
+        week = timedelta(days=7)
+        last_month_start = (month_start - timedelta(days=1)).replace(day=1)
+        same_point_last_month = last_month_start + (now - month_start)
+        held_last_month = Meeting.objects.filter(live, scheduled_start__gte=last_month_start, scheduled_start__lte=same_point_last_month).count()
+        attended = Participant.objects.filter(meeting__in=this_month.filter(status=Meeting.Status.COMPLETED, participants__attended=True).distinct())
 
         done_count = completed.count()
         with_record = completed.filter(report_status=Meeting.Report.APPROVED).count()
@@ -708,7 +744,14 @@ class OverviewView(APIView):
             'records_approved': with_record,
             'needs_review': Meeting.objects.filter(report_status=Meeting.Report.REVIEW).exclude(status=Meeting.Status.CANCELLED).count(),
             'open_actions': open_actions.count(),
+            'trends': trends(now),
+            'upcoming_this_week': upcoming.filter(scheduled_start__lt=now + week).count(),
+            'this_month_change': round(100 * (this_month.count() - held_last_month) / held_last_month) if held_last_month else None,
+            'completed_this_week': completed.filter(Q(actual_end__gte=now - week) | Q(actual_end__isnull=True, scheduled_start__gte=now - week)).count(),
+            'records_this_week': completed.filter(report_approved_at__gte=now - week).count(),
             'insights': {
+                'meetings_this_month': this_month.count(),
+                'attendance_rate': round(100 * attended.filter(attended=True).count() / attended.count()) if attended.exists() else None,
                 'minutes_this_month': sum(m.duration_minutes or 0 for m in this_month.filter(status=Meeting.Status.COMPLETED)),
                 'record_rate': round(100 * with_record / done_count) if done_count else None,
                 'transcript_rate': round(100 * with_transcript / done_count) if done_count else None,
@@ -716,9 +759,24 @@ class OverviewView(APIView):
                 'actions_done_this_month': all_actions.filter(Q(status=ActionItem.Status.DONE, task__isnull=True) | Q(task__status=Task.Status.DONE)).count(),
                 'linked_to_projects': Meeting.objects.filter(live, project__isnull=False).count(),
             },
-            'upcoming': MeetingListSerializer(upcoming[:8], many=True).data,
+            'upcoming': UpcomingSerializer(upcoming[:8], many=True).data,
             'my_actions': ActionSerializer(mine[:20], many=True).data,
             'google': google_status(request.user),
+        })
+
+
+class DirectoryView(APIView):
+    """The team and open projects, read from the company database, for invites, owners and project links."""
+
+    permission_classes = [Staff]
+
+    def get(self, request):
+        staff = User.objects.filter(is_staff=True, is_active=True).order_by('full_name')
+        projects = Project.objects.select_related('client').exclude(status__in=['completed', 'on_hold'])
+        return Response({
+            'me': {'id': request.user.id, 'full_name': request.user.full_name, 'email': request.user.email, 'is_owner': request.user.is_superuser},
+            'staff': [{'id': u.id, 'full_name': u.full_name, 'email': u.email} for u in staff],
+            'projects': [{'id': p.id, 'name': p.name, 'client_name': p.client.full_name} for p in projects],
         })
 
 
@@ -740,11 +798,6 @@ def google_status(user):
     }
 
 
-class Owner(permissions.BasePermission):
-    message = 'Only an owner can change the Google connection.'
-
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_staff and request.user.is_superuser)
 
 
 class GoogleStatusView(APIView):
@@ -773,7 +826,7 @@ class GoogleCallbackView(APIView):
     authentication_classes = []
 
     def get(self, request):
-        back = f"{settings.FRONTEND_URL}/team/meetings"
+        back = f"{settings.MEETINGS_URL}/"
         user_id = google.read_state(request.query_params.get('state'))
         user = User.objects.filter(pk=user_id, is_staff=True, is_superuser=True, is_active=True).first() if user_id else None
         if not user:

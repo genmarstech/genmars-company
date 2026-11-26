@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from .views import ActionViewSet, AgendaViewSet, MeetingViewSet, NoteViewSet, OverviewView, ParticipantViewSet, PointViewSet
+from .views import ActionViewSet, AgendaViewSet, DirectoryView, MeetingViewSet, NoteViewSet, OverviewView, ParticipantViewSet, PointViewSet
 
 router = SimpleRouter()
 router.register(r'(?P<meeting_pk>\d+)/participants', ParticipantViewSet, basename='meeting-participants')
@@ -13,5 +13,6 @@ router.register(r'', MeetingViewSet, basename='meetings')
 
 urlpatterns = [
     path('overview/', OverviewView.as_view(), name='meetings-overview'),
+    path('directory/', DirectoryView.as_view(), name='meetings-directory'),
     path('', include(router.urls)),
 ]

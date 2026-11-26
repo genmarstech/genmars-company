@@ -92,8 +92,7 @@ export async function postJson<T>(path: string, body: unknown, method = 'POST'):
   for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
     if (Array.isArray(value)) fields[key] = String(value[0])
   }
-  const { error, detail } = data as { error?: unknown; detail?: unknown }
-  const message = typeof error === 'string' ? error : typeof detail === 'string' ? detail : ''
+  const message = typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : ''
   throw new ApiError(message || (Object.keys(fields).length ? '' : 'Something went wrong. Please try again.'), fields)
 }
 

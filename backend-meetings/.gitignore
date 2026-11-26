@@ -1,0 +1,6 @@
+.env
+venv/
+__pycache__/
+*.py[cod]
+# the Google OAuth client file: its values go in .env
+client_secret*.json

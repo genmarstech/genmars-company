@@ -34,7 +34,7 @@ services:
       DJANGO_DEBUG: "False"
       DJANGO_ALLOWED_HOSTS: ${API_HOSTS:-api.genmars.co.ke,localhost,127.0.0.1}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${API_ORIGINS:-https://api.genmars.co.ke}
-      DJANGO_CORS_ALLOWED_ORIGINS: ${SITE_ORIGINS:-https://company-v1-gamma.vercel.app,https://genmars.co.ke,https://www.genmars.co.ke}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${SITE_ORIGINS:-https://company-v1-gamma.vercel.app,https://genmars.co.ke,https://www.genmars.co.ke,https://meetings.genmars.co.ke}
       FRONTEND_URL: ${FRONTEND_URL:-https://company-v1-gamma.vercel.app}
     depends_on:
       genmarsdb:

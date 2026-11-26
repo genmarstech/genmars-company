@@ -2,17 +2,14 @@ from datetime import timedelta
 from unittest import mock
 from urllib.parse import parse_qs, urlparse
 
-from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from portal.models import Project, Task
+from company.models import Project, Task, Token, User
 from . import google, sync
 from .models import ActionItem, Artifact, GoogleConnection, Meeting, Participant, Point
-
-User = get_user_model()
 
 GOOGLE = dict(GOOGLE_CLIENT_ID='cid', GOOGLE_CLIENT_SECRET='csecret', GOOGLE_REDIRECT_URI='https://api.example.com/api/v1/integrations/google/callback/', GOOGLE_TOKEN_KEY='')
 
@@ -67,14 +64,14 @@ class FakeGoogle:
         return 404, {'error': {'message': f'unexpected {method} {url}'}}
 
 
-@override_settings(MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}}, **GOOGLE)
+@override_settings(MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}}, MEETINGS_URL='http://meetings.example.com', **GOOGLE)
 class MeetingsTests(APITestCase):
 
     def setUp(self):
-        self.edwin = User.objects.create_user(email='edwin@example.com', password='S3cure-pass-123', full_name='Edwin Mwangi', is_staff=True)
-        self.grace = User.objects.create_user(email='grace@example.com', password='S3cure-pass-123', full_name='Grace Otieno', is_staff=True)
-        self.owner = User.objects.create_superuser(email='owner@example.com', password='S3cure-pass-123', full_name='Owner Person')
-        self.alice = User.objects.create_user(email='alice@example.com', password='S3cure-pass-123', full_name='Alice Client')
+        self.edwin = User.objects.create(email='edwin@example.com', full_name='Edwin Mwangi', is_staff=True)
+        self.grace = User.objects.create(email='grace@example.com', full_name='Grace Otieno', is_staff=True)
+        self.owner = User.objects.create(email='owner@example.com', full_name='Owner Person', is_staff=True, is_superuser=True)
+        self.alice = User.objects.create(email='alice@example.com', full_name='Alice Client')
         self.project = Project.objects.create(client=self.alice, name='Website redesign', status='in_progress')
         self.fake = FakeGoogle()
         patcher = mock.patch.object(google, '_http', self.fake)
@@ -99,6 +96,15 @@ class MeetingsTests(APITestCase):
 
     # ---- access
 
+    def test_signs_in_with_the_main_sites_token(self):
+        Token.objects.create(key='k' * 40, user=self.grace)
+        self.client = self.client_class()  # signed out
+        self.assertEqual(self.client.get('/api/v1/meetings/').status_code, status.HTTP_401_UNAUTHORIZED)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + 'k' * 40)
+        self.assertEqual(self.client.get('/api/v1/meetings/').status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + 'x' * 40)
+        self.assertEqual(self.client.get('/api/v1/meetings/').status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_clients_cannot_see_meetings(self):
         self.client.force_authenticate(self.alice)
         self.assertEqual(self.client.get('/api/v1/meetings/').status_code, status.HTTP_403_FORBIDDEN)
@@ -118,17 +124,17 @@ class MeetingsTests(APITestCase):
 
     def test_callback_stores_encrypted_tokens(self):
         state = google.authorization_url(self.owner).split('state=')[1]
-        self.client.force_authenticate(None)
+        self.client = self.client_class()  # signed out
         res = self.client.get('/api/v1/integrations/google/callback/', {'code': 'c0de', 'state': parse_qs(f'state={state}')['state'][0]})
         self.assertEqual(res.status_code, 302)
-        self.assertTrue(res['Location'].endswith('/team/meetings?google=connected'))
+        self.assertEqual(res['Location'], 'http://meetings.example.com/?google=connected')
         conn = GoogleConnection.current()
         self.assertEqual(conn.account_email, 'office@genmars.co.ke')
         self.assertNotIn('acc-1', conn.access_token)
         self.assertEqual(google.decrypt(conn.refresh_token), 'ref-1')
 
     def test_callback_rejects_forged_state(self):
-        self.client.force_authenticate(None)
+        self.client = self.client_class()  # signed out
         res = self.client.get('/api/v1/integrations/google/callback/', {'code': 'c0de', 'state': 'forged'})
         self.assertTrue(res['Location'].endswith('?google=invalid'))
         self.assertIsNone(GoogleConnection.current())
@@ -322,6 +328,13 @@ class MeetingsTests(APITestCase):
         self.assertIsNotNone(m.next_sync_at)
         self.assertEqual(m.status, 'live')
 
+    def test_directory_lists_team_and_open_projects(self):
+        Project.objects.create(client=self.alice, name='Old site', status='completed')
+        data = self.client.get('/api/v1/meetings/directory/').data
+        self.assertEqual([s['full_name'] for s in data['staff']], ['Edwin Mwangi', 'Grace Otieno', 'Owner Person'])
+        self.assertEqual([p['name'] for p in data['projects']], ['Website redesign'])
+        self.assertFalse(data['me']['is_owner'])
+
     def test_overview(self):
         self.connect()
         mid = self.schedule().data['id']
@@ -332,3 +345,6 @@ class MeetingsTests(APITestCase):
         self.assertEqual(data['my_actions'][0]['title'], 'Mine')
         self.assertTrue(data['google']['connected'])
         self.assertNotIn('access_token', str(data))
+        self.assertEqual(sum(data['trends']['upcoming']), 1)
+        self.assertEqual(len(data['trends']['held']), 8)
+        self.assertEqual(data['upcoming'][0]['people'][:1], ['Edwin Mwangi'])

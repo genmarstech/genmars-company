@@ -1,0 +1,35 @@
+# Genmars Meetings API. It uses the company database (genmars_db) from backend/docker-compose.yml,
+# so start that first: cd ../backend && docker compose up -d
+#   docker compose up -d --build     start or update
+#   docker compose logs -f meetings  follow the logs
+services:
+  meetings:
+    build: .
+    container_name: genmars_meetings_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # the database container, reached over the main backend's Docker network
+      DB_HOST: genmarsdb
+      DB_PORT: "5432"
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: ${API_HOSTS:-api.genmars.co.ke,localhost,127.0.0.1}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${API_ORIGINS:-https://api.genmars.co.ke}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${SITE_ORIGINS:-https://meetings.genmars.co.ke}
+      MEETINGS_URL: ${MEETINGS_URL:-https://meetings.genmars.co.ke}
+    ports:
+      # the Cloudflare tunnel sends api.genmars.co.ke/api/v1/meetings/ and /api/v1/integrations/google/ here
+      - "127.0.0.1:${MEETINGS_API_PORT:-8001}:8000"
+    networks:
+      - genmars
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  genmars:
+    # created by backend/docker-compose.yml
+    external: true
+    name: backend_default

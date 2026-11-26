@@ -185,4 +185,4 @@ export type ActivityEvent = {
   all_day: boolean
 }
 
-export type SearchResult = { kind: 'client' | 'project' | 'invoice' | 'lead' | 'order' | 'task' | 'meeting'; id: number; title: string; subtitle: string; url: string }
+export type SearchResult = { kind: 'client' | 'project' | 'invoice' | 'lead' | 'order' | 'task'; id: number; title: string; subtitle: string; url: string }
