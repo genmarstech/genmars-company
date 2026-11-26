@@ -141,12 +141,12 @@ export type MeetingsOverview = {
     actions_done_this_month: number
     linked_to_projects: number
   }
-  trends: { upcoming: number[]; held: number[]; completed: number[]; records: number[] }
+  trends?: { upcoming: number[]; held: number[]; completed: number[]; records: number[] }
   upcoming_this_week: number
   this_month_change: number | null
   completed_this_week: number
   records_this_week: number
-  upcoming: (MeetingRow & { people: string[] })[]
+  upcoming: (MeetingRow & { people?: string[] })[]
   my_actions: ActionItem[]
   google: GoogleStatus
 }
