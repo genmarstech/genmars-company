@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from '../components/Link'
 import { navigate } from '../router'
 import { AuthLayout } from './AuthLayout'
 import { AuthField, FormMessage, SubmitButton } from './fields'
-import { ApiError, login, requestPasswordReset, resetPassword, signUp, type FieldErrors, type User } from './session'
+import { ApiError, finishGoogleSignIn, login, requestPasswordReset, resetPassword, signUp, type FieldErrors, type User } from './session'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -13,10 +13,9 @@ function formValues(e: FormEvent<HTMLFormElement>) {
 }
 
 /** Where to go after signing in: onboarding first, then the page that sent them here, or their account. */
-function nextPath(user: User) {
+function nextPath(user: User, next = new URLSearchParams(window.location.search).get('next')) {
   if (user.is_staff) return '/team'
   if (!user.onboarding_completed) return '/onboarding'
-  const next = new URLSearchParams(window.location.search).get('next')
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/portal'
 }
 
@@ -209,6 +208,36 @@ export function ResetPasswordPage() {
           <AuthField label="Confirm new password" name="confirm" type="password" autoComplete="new-password" icon="lock" error={errors.confirm} />
           <SubmitButton busy={busy}>Save password</SubmitButton>
         </form>
+      )}
+    </AuthLayout>
+  )
+}
+
+/** Google sends people back here after "Continue with Google". */
+export function GoogleReturnPage() {
+  const [error, setError] = useState('')
+  const done = useRef(false)
+
+  useEffect(() => {
+    if (done.current) return // the nonce can only be used once
+    done.current = true
+    const fragment = window.location.hash
+    // keep the token out of the address bar and history
+    window.history.replaceState({}, '', '/auth/google')
+    finishGoogleSignIn(fragment)
+      .then(({ user, next }) => navigate(nextPath(user, next)))
+      .catch((e) => setError(e instanceof ApiError ? e.message : 'Google sign-in didn’t work. Please try again.'))
+  }, [])
+
+  return (
+    <AuthLayout title={error ? 'Couldn’t sign you in' : 'Signing you in…'} subtitle={error ? 'Nothing was changed.' : 'One moment while we finish with Google.'}>
+      {error && (
+        <>
+          <FormMessage tone="error">{error}</FormMessage>
+          <p className="au-footer">
+            <Link to="/login">Back to sign in</Link>
+          </p>
+        </>
       )}
     </AuthLayout>
   )

@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Icon, LogoMark } from '../components/Icon'
 import { Link } from '../components/Link'
 import { ServiceArt } from '../components/ServiceArt'
+import { ApiError, startGoogleSignIn } from './session'
 import './auth.css'
 
 const perks = [
@@ -113,9 +114,10 @@ const providers = [
   },
 ]
 
-// The buttons are in place for when the OAuth apps are set up; until then they explain that.
+// Google signs in for real; GitHub and Microsoft explain they're coming.
 function SocialButtons() {
   const [notice, setNotice] = useState('')
+  const [busy, setBusy] = useState(false)
   return (
     <div className="au-social">
       <div className="au-social-row">
@@ -125,7 +127,21 @@ function SocialButtons() {
             type="button"
             className="au-social-btn"
             aria-describedby="au-social-note"
-            onClick={() => setNotice(`Signing in with ${p.name} is coming soon. Please use your email for now.`)}
+            disabled={busy}
+            onClick={async () => {
+              if (p.name !== 'Google') {
+                setNotice(`Signing in with ${p.name} is coming soon. Please use Google or your email for now.`)
+                return
+              }
+              setBusy(true)
+              setNotice('')
+              try {
+                await startGoogleSignIn(new URLSearchParams(window.location.search).get('next') ?? '')
+              } catch (e) {
+                setNotice(e instanceof ApiError ? e.message : 'Couldn’t reach Google. Please try again.')
+                setBusy(false)
+              }
+            }}
           >
             {p.logo}
             <span>{p.name}</span>
