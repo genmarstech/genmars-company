@@ -16,8 +16,8 @@ function LegalPage({ title, intro, children }: { title: string; intro: string; c
           </span>
         </Link>
         <nav className="lg-nav" aria-label="Legal">
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/terms">Terms</Link>
+          <Link to="/privacy-policy">Privacy</Link>
+          <Link to="/terms-of-service">Terms</Link>
         </nav>
       </header>
       <article className="lg-doc">
@@ -35,8 +35,8 @@ export function LegalFooter() {
   return (
     <footer className="lg-foot">
       <span>© {new Date().getFullYear()} Genmars Tech</span>
-      <Link to="/privacy">Privacy policy</Link>
-      <Link to="/terms">Terms of service</Link>
+      <Link to="/privacy-policy">Privacy policy</Link>
+      <Link to="/terms-of-service">Terms of service</Link>
       <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
     </footer>
   )
@@ -175,7 +175,7 @@ export function TermsPage() {
       <h2>What Genmars Meetings is</h2>
       <p>
         Genmars Meetings is an internal tool of Genmars Tech for scheduling, running and recording company meetings. The meetings themselves
-        happen on Google Meet. By using Genmars Meetings you agree to these terms and to our <Link to="/privacy">privacy policy</Link>.
+        happen on Google Meet. By using Genmars Meetings you agree to these terms and to our <Link to="/privacy-policy">privacy policy</Link>.
       </p>
 
       <h2>Who may use it</h2>

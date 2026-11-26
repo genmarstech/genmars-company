@@ -97,7 +97,7 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
           <span>Together, we build better.</span>
         </div>
         <p className="ms-legal">
-          <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link>
+          <Link to="/privacy-policy">Privacy</Link> · <Link to="/terms-of-service">Terms</Link>
         </p>
       </aside>
 

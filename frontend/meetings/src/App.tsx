@@ -12,14 +12,14 @@ export default function App() {
   const { user } = useSession()
   const signedIn = !!user?.is_staff
   // anyone can read these, signed in or not (Google links to them from the consent screen)
-  const isPublic = path === '/login' || path === '/privacy' || path === '/terms'
+  const isPublic = ['/login', '/privacy', '/privacy-policy', '/terms', '/terms-of-service'].includes(path)
 
   useEffect(() => {
     if (!signedIn && !isPublic) navigate(`/login?next=${encodeURIComponent(path + window.location.search)}`)
   }, [signedIn, isPublic, path])
 
-  if (path === '/privacy') return <PrivacyPage />
-  if (path === '/terms') return <TermsPage />
+  if (path === '/privacy' || path === '/privacy-policy') return <PrivacyPage />
+  if (path === '/terms' || path === '/terms-of-service') return <TermsPage />
   if (path === '/login') return <Login />
   if (!signedIn) return null
   const meeting = path.match(/^\/(\d+)$/)
