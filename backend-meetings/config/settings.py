@@ -115,7 +115,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or f"Genmars Tech <{os.gete
 # The meetings site, for redirects after Google sign-in.
 MEETINGS_URL = os.getenv('MEETINGS_URL', 'http://localhost:5174' if DEBUG else 'https://meetings.genmars.co.ke').rstrip('/')
 # The team dashboard on the main site, for links in emails.
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://company-v1-gamma.vercel.app').rstrip('/')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://www.genmars.co.ke').rstrip('/')
 
 # Google Meet + Calendar. The OAuth client is a "Web application" client in Google Cloud; GOOGLE_REDIRECT_URI
 # must be listed there exactly, e.g. https://api.genmars.co.ke/api/v1/integrations/google/callback/
