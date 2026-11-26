@@ -12,7 +12,7 @@ import { Services } from './pages/Services'
 import { Onboarding } from './pages/Onboarding'
 import { Portal } from './portal'
 import { Team } from './team'
-import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignUpPage } from './auth/pages'
+import { ForgotPasswordPage, GoogleReturnPage, LoginPage, ResetPasswordPage, SignUpPage } from './auth/pages'
 import { navigate, usePathname } from './router'
 
 type Route = { title: string; page: () => React.JSX.Element | null; bare?: boolean }
@@ -27,6 +27,7 @@ const routes: Record<string, Route> = {
   '/privacy': { title: 'Privacy policy · Genmars Tech', page: Privacy },
   '/terms': { title: 'Terms of service · Genmars Tech', page: Terms },
   '/login': { title: 'Sign in · Genmars Tech', page: LoginPage, bare: true },
+  '/auth/google': { title: 'Signing in · Genmars Tech', page: GoogleReturnPage, bare: true },
   '/signup': { title: 'Create your account · Genmars Tech', page: SignUpPage, bare: true },
   '/forgot-password': { title: 'Forgot password · Genmars Tech', page: ForgotPasswordPage, bare: true },
   '/reset-password': { title: 'Choose a new password · Genmars Tech', page: ResetPasswordPage, bare: true },

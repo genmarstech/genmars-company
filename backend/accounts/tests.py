@@ -5,6 +5,7 @@ from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 
@@ -224,3 +225,67 @@ class OnboardingTests(APITestCase):
     def test_profile_needs_sign_in(self):
         self.client.force_authenticate(None)
         self.assertEqual(self.client.get(self.URL).status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+@override_settings(
+    GOOGLE_CLIENT_ID='cid.apps.googleusercontent.com', GOOGLE_CLIENT_SECRET='sec',
+    GOOGLE_LOGIN_REDIRECT_URI='https://api.example.com/api/v1/auth/google/callback/', FRONTEND_URL='https://www.example.com',
+)
+class GoogleLoginTests(APITestCase):
+
+    def setUp(self):
+        from unittest import mock
+        from . import google_login
+        cache.clear()
+        self.claims = {'aud': 'cid.apps.googleusercontent.com', 'iss': 'https://accounts.google.com', 'email': 'Wanjiru@Example.com', 'email_verified': 'true', 'name': 'Wanjiru K'}
+
+        def fake(method, url, form=None, params=None):
+            if url == google_login.TOKEN_URL:
+                return 200, {'id_token': 'idt'}
+            return 200, dict(self.claims)
+        patcher = mock.patch.object(google_login, '_http', fake)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def start(self, nonce='n' * 20, next_path='/portal'):
+        res = self.client.get('/api/v1/auth/google/start/', {'nonce': nonce, 'next': next_path})
+        return parse_qs(urlparse(res.data['url']).query)['state'][0]
+
+    def callback(self, state, code='c0de'):
+        res = self.client.get('/api/v1/auth/google/callback/', {'state': state, 'code': code})
+        self.assertEqual(res.status_code, 302)
+        return res['Location']
+
+    def test_new_person_gets_an_account_and_token(self):
+        loc = self.callback(self.start())
+        self.assertTrue(loc.startswith('https://www.example.com/auth/google#'))
+        frag = parse_qs(urlparse(loc).fragment)
+        user = User.objects.get(email__iexact='wanjiru@example.com')
+        self.assertEqual(frag['token'][0], user.auth_token.key)
+        self.assertEqual(frag['nonce'][0], 'n' * 20)
+        self.assertEqual(frag['next'][0], '/portal')
+        self.assertEqual(user.full_name, 'Wanjiru K')
+        self.assertFalse(user.has_usable_password())
+
+    def test_existing_account_is_reused(self):
+        user = User.objects.create_user(email='wanjiru@example.com', password='S3cure-pass-123', full_name='W')
+        frag = parse_qs(urlparse(self.callback(self.start())).fragment)
+        self.assertEqual(frag['token'][0], Token.objects.get(user=user).key)
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_rejects_forged_state_wrong_audience_and_unverified_email(self):
+        self.assertTrue(self.callback('forged').endswith('#error=expired'))
+        self.claims['aud'] = 'someone-else'
+        self.assertTrue(self.callback(self.start()).endswith('#error=failed'))
+        self.claims['aud'] = 'cid.apps.googleusercontent.com'
+        self.claims['email_verified'] = 'false'
+        self.assertTrue(self.callback(self.start()).endswith('#error=failed'))
+        self.assertFalse(User.objects.exists())
+
+    def test_next_must_stay_on_the_site(self):
+        frag = parse_qs(urlparse(self.callback(self.start(next_path='//evil.example'))).fragment)
+        self.assertNotIn('next', frag)
+
+    @override_settings(GOOGLE_CLIENT_SECRET='')
+    def test_says_when_not_set_up(self):
+        self.assertEqual(self.client.get('/api/v1/auth/google/start/', {'nonce': 'n' * 20}).status_code, 503)
