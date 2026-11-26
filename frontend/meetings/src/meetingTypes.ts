@@ -132,6 +132,8 @@ export type MeetingsOverview = {
   needs_review: number
   open_actions: number
   insights: {
+    meetings_this_month: number
+    attendance_rate: number | null
     minutes_this_month: number
     record_rate: number | null
     transcript_rate: number | null
@@ -139,7 +141,12 @@ export type MeetingsOverview = {
     actions_done_this_month: number
     linked_to_projects: number
   }
-  upcoming: MeetingRow[]
+  trends: { upcoming: number[]; held: number[]; completed: number[]; records: number[] }
+  upcoming_this_week: number
+  this_month_change: number | null
+  completed_this_week: number
+  records_this_week: number
+  upcoming: (MeetingRow & { people: string[] })[]
   my_actions: ActionItem[]
   google: GoogleStatus
 }
@@ -227,3 +234,10 @@ export function useDirectory() {
 
 /** The team dashboard on the main site, for projects and the task list. */
 export const TEAM_URL = (import.meta.env.VITE_TEAM_URL || 'https://company-v1-gamma.vercel.app').replace(/\/+$/, '')
+
+export const GOOGLE_RESULT: Record<string, { tone: 'ok' | 'bad'; text: string }> = {
+  connected: { tone: 'ok', text: 'Google is connected. New meetings get a Meet link and a Calendar invite.' },
+  denied: { tone: 'bad', text: 'Google sign-in was cancelled, so nothing changed.' },
+  failed: { tone: 'bad', text: 'Google didn’t accept the sign-in. Check the OAuth client settings and try again.' },
+  invalid: { tone: 'bad', text: 'That sign-in link expired or wasn’t started by an owner. Start again from here.' },
+}

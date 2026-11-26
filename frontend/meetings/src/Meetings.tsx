@@ -1,168 +1,15 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { ApiError, postJson } from './session'
-import { Icon } from './ui/Icon'
 import { Link } from './ui/Link'
-import { Empty, Loading, Panel, StatusBadge, Layout } from './ui/Layout'
+import { Empty, Loading, Panel, StatusBadge } from './ui/Layout'
 import { formatDate, useApi } from './useApi'
-import { navigate } from './router'
 import { Field } from './ui/Field'
 import {
-  CATEGORIES, canJoin, clock, joinMeeting, dayLabel, reportTone, statusTone, timeRange, viewerZone,
-  TEAM_URL, useDirectory, type ActionItem, type GoogleStatus, type MeetingDetail, type MeetingRow, type MeetingsOverview,
+  CATEGORIES, clock, reportTone, statusTone, timeRange, viewerZone,
+  useDirectory, type ActionItem, type GoogleStatus, type MeetingDetail, type MeetingRow, type MeetingsOverview,
 } from './meetingTypes'
 import { formData, hm, isoDate, useMutation } from './shared'
 
-const GOOGLE_RESULT: Record<string, { tone: 'ok' | 'bad'; text: string }> = {
-  connected: { tone: 'ok', text: 'Google is connected. New meetings get a Meet link and a Calendar invite.' },
-  denied: { tone: 'bad', text: 'Google sign-in was cancelled, so nothing changed.' },
-  failed: { tone: 'bad', text: 'Google didn’t accept the sign-in. Check the OAuth client settings and try again.' },
-  invalid: { tone: 'bad', text: 'That sign-in link expired or wasn’t started by an owner. Start again from here.' },
-}
-
-export function Meetings() {
-  const params = new URLSearchParams(window.location.search)
-  const [scheduling, setScheduling] = useState(params.get('new') === '1')
-  const [starting, setStarting] = useState(false)
-  const [startError, setStartError] = useState('')
-  const overview = useApi<MeetingsOverview>('/api/v1/meetings/overview/')
-  const o = overview.data
-  const googleResult = GOOGLE_RESULT[params.get('google') ?? '']
-
-  const startInstant = async () => {
-    setStarting(true)
-    setStartError('')
-    const tab = window.open('', '_blank')
-    try {
-      const m = await postJson<MeetingDetail>('/api/v1/meetings/instant/', {})
-      if (tab) tab.location.href = m.meet_uri
-      navigate(`/${m.id}`)
-    } catch (e) {
-      tab?.close()
-      setStartError(e instanceof ApiError ? e.message : 'Couldn’t start the meeting.')
-    } finally {
-      setStarting(false)
-    }
-  }
-
-  return (
-    <Layout
-      title="Meetings"
-      subtitle="Plan, run and keep a record of every meeting: what was decided, and who does what next."
-      actions={
-        <>
-          <button type="button" className="btn btn--sm btn--ghost" disabled={starting || (o ? !o.google.connected : true)} title={o && !o.google.connected ? 'Connect Google first' : undefined} onClick={startInstant}>
-            <Icon name="video" size={16} /> {starting ? 'Starting…' : 'Start now'}
-          </button>
-          <button type="button" className="btn btn--sm" onClick={() => setScheduling((s) => !s)}>
-            {scheduling ? 'Close' : 'Schedule meeting'}
-          </button>
-        </>
-      }
-    >
-      {googleResult && <p className={`mt-banner mt-banner--${googleResult.tone}`} role="status">{googleResult.text}</p>}
-      {startError && <p className="pt-error">{startError}</p>}
-
-      {scheduling && (
-        <Panel title="Schedule a meeting">
-          <ScheduleForm
-            google={o?.google}
-            onSaved={(m) => navigate(`/${m.id}`)}
-            onCancel={() => setScheduling(false)}
-          />
-        </Panel>
-      )}
-
-      {!o ? (
-        <Loading error={overview.error} />
-      ) : (
-        <>
-          <div className="pt-stats">
-            <Stat label="Coming up" value={o.upcoming_count} note={o.upcoming[0] ? `Next: ${dayLabel(o.upcoming[0].scheduled_start)}, ${clock(o.upcoming[0].scheduled_start)}` : 'Nothing scheduled'} />
-            <Stat label="Held this month" value={o.this_month} note={o.insights.minutes_this_month ? `${hm(o.insights.minutes_this_month)} in meetings` : 'No time logged yet'} />
-            <Stat
-              label="Records approved"
-              value={o.records_approved}
-              note={o.needs_review ? `${o.needs_review} waiting for review` : o.completed ? `of ${o.completed} finished meetings` : 'Approve a summary after each meeting'}
-            />
-            <Stat label="Open action items" value={o.open_actions} note={o.my_actions.length ? `${o.my_actions.length} of them yours` : 'None of them yours'} />
-          </div>
-
-          <div className="pt-two">
-            <Panel title="Up next" action={<span className="pt-muted pt-small">Your time zone</span>}>
-              <Upcoming meetings={o.upcoming} />
-            </Panel>
-            <div className="pt-side-col">
-              <GooglePanel status={o.google} onChange={overview.reload} />
-              <Panel title="Your action items" action={<a href={`${TEAM_URL}/team/work`} className="pt-more">My work</a>}>
-                <MyActions items={o.my_actions} onChange={overview.reload} />
-              </Panel>
-            </div>
-          </div>
-
-          <MeetingCalendar />
-          <History />
-          <Insights o={o} />
-        </>
-      )}
-    </Layout>
-  )
-}
-
-function Stat({ label, value, note }: { label: string; value: number; note: string }) {
-  return (
-    <div className="pt-stat">
-      <span className="pt-stat-label">{label}</span>
-      <span className="pt-stat-value">{value}</span>
-      <span className="pt-stat-note">{note}</span>
-    </div>
-  )
-}
-
-function Upcoming({ meetings }: { meetings: MeetingRow[] }) {
-  const [error, setError] = useState('')
-  if (meetings.length === 0) return <Empty>No meetings coming up. Schedule one, or start a call now.</Empty>
-  const days: [string, MeetingRow[]][] = []
-  for (const m of meetings) {
-    const label = m.status === 'live' ? 'Happening now' : dayLabel(m.scheduled_start)
-    const last = days[days.length - 1]
-    if (last && last[0] === label) last[1].push(m)
-    else days.push([label, [m]])
-  }
-  return (
-    <div className="mt-days">
-      {error && <p className="pt-error">{error}</p>}
-      {days.map(([label, list]) => (
-        <section key={label}>
-          <h3 className="mt-day">{label}</h3>
-          <ul className="mt-upcoming">
-            {list.map((m) => (
-              <li key={m.id} className={m.status === 'live' ? 'is-live' : ''}>
-                <span className="mt-time">{clock(m.scheduled_start)}</span>
-                <Link to={`/${m.id}`} className="mt-up-main">
-                  <strong>{m.title}</strong>
-                  <span className="pt-muted pt-small">
-                    {[m.project_name || m.category_label, `${m.participant_count} ${m.participant_count === 1 ? 'person' : 'people'}`, m.organizer_name.split(' ')[0]].filter(Boolean).join(' · ')}
-                  </span>
-                </Link>
-                {canJoin(m) ? (
-                  <button type="button" className="btn btn--sm" onClick={async () => setError((await joinMeeting(m.id)) ?? '')}>
-                    Join
-                  </button>
-                ) : m.conference_status === 'pending' ? (
-                  <span className="pt-muted pt-small">Link on its way</span>
-                ) : !m.meet_uri ? (
-                  <span className="pt-muted pt-small">No Meet link</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  )
-}
-
-function GooglePanel({ status, onChange }: { status: GoogleStatus; onChange: () => void }) {
+export function GooglePanel({ status, onChange }: { status: GoogleStatus; onChange: () => void }) {
   const { busy, message, run } = useMutation()
   const [opening, setOpening] = useState(false)
   const connect = async () => {
@@ -219,7 +66,7 @@ function GooglePanel({ status, onChange }: { status: GoogleStatus; onChange: () 
   )
 }
 
-function MyActions({ items, onChange }: { items: ActionItem[]; onChange: () => void }) {
+export function MyActions({ items, onChange }: { items: ActionItem[]; onChange: () => void }) {
   const { busy, run } = useMutation()
   const today = isoDate()
   if (items.length === 0) return <Empty>Nothing from meetings waiting on you.</Empty>
@@ -251,10 +98,11 @@ function MyActions({ items, onChange }: { items: ActionItem[]; onChange: () => v
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-function MeetingCalendar() {
+export function MeetingCalendar() {
   const [month, setMonth] = useState(() => {
+    const wanted = new URLSearchParams(window.location.search).get('month')?.match(/^(\d{4})-(\d{2})$/)
     const d = new Date()
-    return new Date(d.getFullYear(), d.getMonth(), 1)
+    return wanted ? new Date(Number(wanted[1]), Number(wanted[2]) - 1, 1) : new Date(d.getFullYear(), d.getMonth(), 1)
   })
   // the grid runs Monday to Sunday and always shows whole weeks
   const first = new Date(month)
@@ -322,9 +170,10 @@ function MeetingCalendar() {
 
 // ---------------------------------------------------------------- history
 
-function History() {
-  const [q, setQ] = useState('')
-  const [term, setTerm] = useState('')
+export function History() {
+  const initial = new URLSearchParams(window.location.search).get('q') ?? ''
+  const [q, setQ] = useState(initial)
+  const [term, setTerm] = useState(initial)
   const [status, setStatus] = useState('')
   const [category, setCategory] = useState('')
   const [project, setProject] = useState('')
@@ -431,7 +280,7 @@ function History() {
   )
 }
 
-function Insights({ o }: { o: MeetingsOverview }) {
+export function Insights({ o }: { o: MeetingsOverview }) {
   const i = o.insights
   const pct = (n: number | null) => (n === null ? '—' : `${n}%`)
   return (

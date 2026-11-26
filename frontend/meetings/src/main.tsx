@@ -4,6 +4,7 @@ import './styles/base.css'
 import './styles/shell.css'
 import './styles/team.css'
 import './styles/meetings.css'
+import './styles/home.css'
 import App from './App.tsx'
 
 document.body.classList.add('theme-light')

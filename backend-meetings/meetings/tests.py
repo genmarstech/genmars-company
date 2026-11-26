@@ -345,3 +345,6 @@ class MeetingsTests(APITestCase):
         self.assertEqual(data['my_actions'][0]['title'], 'Mine')
         self.assertTrue(data['google']['connected'])
         self.assertNotIn('access_token', str(data))
+        self.assertEqual(sum(data['trends']['upcoming']), 1)
+        self.assertEqual(len(data['trends']['held']), 8)
+        self.assertEqual(data['upcoming'][0]['people'][:1], ['Edwin Mwangi'])
