@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
+from .orders import TeamOrderViewSet, TeamServiceViewSet
 from .team import (
     TeamClientViewSet, TeamInvoiceViewSet, TeamLinkViewSet, TeamMessageViewSet, TeamMilestoneViewSet,
     TeamBrandFileView, TeamFinanceView, TeamProjectViewSet, TeamSummaryView, TeamThreadsView,
@@ -20,6 +21,8 @@ router.register(r"messages", TeamMessageViewSet, basename='team-messages')
 router.register(r"tasks", TaskViewSet, basename='team-tasks')
 router.register(r"time", TimeEntryViewSet, basename='team-time')
 router.register(r"staff", StaffViewSet, basename='team-staff')
+router.register(r"orders", TeamOrderViewSet, basename='team-orders')
+router.register(r"services", TeamServiceViewSet, basename='team-services')
 router.register(r"notes", ClientNoteViewSet, basename='team-notes')
 
 urlpatterns = [

@@ -2,7 +2,7 @@ import { useSession } from '../auth/session'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { Empty, Loading, Panel, PortalLayout } from './PortalLayout'
-import { kes, timeAgo, useApi, type Summary } from './useApi'
+import { formatDate, kes, timeAgo, useApi, type Summary } from './useApi'
 import { ProgressBar } from './Projects'
 
 export function Dashboard() {
@@ -14,8 +14,8 @@ export function Dashboard() {
       title="Dashboard"
       subtitle={`Welcome back, ${user?.full_name.split(' ')[0] ?? ''}. Here’s where your projects stand.`}
       actions={
-        <Link to="/portal/requests" className="btn btn--sm">
-          New request <Icon name="arrow" size={16} />
+        <Link to="/portal/orders/new" className="btn btn--sm">
+          Order a service <Icon name="arrow" size={16} />
         </Link>
       }
     >
@@ -23,9 +23,23 @@ export function Dashboard() {
         <Loading error={error} />
       ) : (
         <>
+          {data.quotes_waiting.map((q) => (
+            <Link key={q.id} to={`/portal/orders/${q.id}`} className="pt-panel od-callout">
+              <span>
+                <strong>Your quote for {q.service.toLowerCase()} is ready</strong>
+                <span className="pt-muted pt-small">
+                  {kes(q.price)}
+                  {q.valid_until && ` · valid until ${formatDate(q.valid_until)}`}
+                </span>
+              </span>
+              <span className="pt-more">
+                Review <Icon name="arrow" size={14} />
+              </span>
+            </Link>
+          ))}
           <div className="pt-stats">
             <Stat label="Active projects" value={data.active_projects} />
-            <Stat label="Completed" value={data.completed_projects} />
+            <Stat label="Open orders" value={data.open_orders} note={data.quotes_waiting.length ? `${data.quotes_waiting.length} quote${data.quotes_waiting.length > 1 ? 's' : ''} to review` : undefined} />
             <Stat label="Invoices" value={data.invoices} note={Number(data.unpaid_total) ? `${kes(data.unpaid_total)} due` : 'All paid'} />
             <Stat label="Unread messages" value={data.unread_messages} />
           </div>
@@ -42,7 +56,7 @@ export function Dashboard() {
               {data.projects.length === 0 ? (
                 <Empty>
                   No active projects yet. Once we agree a quote, your project and its timeline appear here.{' '}
-                  <Link to="/portal/requests">Send a request</Link>
+                  <Link to="/portal/orders/new">Order a service</Link>
                 </Empty>
               ) : (
                 <ul className="pt-list">

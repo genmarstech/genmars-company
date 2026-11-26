@@ -27,6 +27,7 @@ const ACTIONS: { title: string; url: string; hint?: string }[] = [
   { title: 'Log time', url: '/team/time' },
   { title: 'New project', url: '/team/projects?new=1' },
   { title: 'New invoice', url: '/team/invoices?new=1' },
+  { title: 'Orders needing a quote', url: '/team/orders?view=needs_quote' },
 ]
 
 const KIND_GROUP: Record<SearchResult['kind'], string> = {
@@ -34,6 +35,7 @@ const KIND_GROUP: Record<SearchResult['kind'], string> = {
   project: 'Projects',
   invoice: 'Invoices',
   lead: 'Leads',
+  order: 'Orders',
   task: 'Tasks',
 }
 

@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from applications_communications.models import Enquiry
 from applications_communications.notifications import notify_new_enquiry
 from applications_communications.serializers import PortalRequestSerializer
-from .models import Invoice, Message, Milestone, Project
+from .models import Invoice, Message, Milestone, Order, Project
 from .serializers import InvoiceSerializer, MessageSerializer, ProjectDetailSerializer, ProjectSerializer
 
 # Every view here only ever returns the signed-in client's own records.
@@ -39,6 +39,11 @@ class SummaryView(APIView):
             'unread_messages': Message.objects.filter(client=user, read_by_client=False).exclude(sender=user).count(),
             'projects': ProjectSerializer(projects.exclude(status=Project.Status.COMPLETED)[:4], many=True).data,
             'activity': activity[:6],
+            'open_orders': Order.objects.filter(client=user, status__in=Order.OPEN).count(),
+            'quotes_waiting': [
+                {'id': o.id, 'number': o.number, 'service': o.service_name, 'price': o.quoted_price, 'valid_until': o.quote_valid_until}
+                for o in Order.objects.filter(client=user, status=Order.Status.QUOTED)
+            ],
         })
 
 

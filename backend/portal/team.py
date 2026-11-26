@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from applications_communications.models import Enquiry
-from .models import Invoice, Message, Milestone, Project, ProjectLink
+from .models import Invoice, Message, Milestone, Order, Project, ProjectLink
 from .serializers import MilestoneSerializer, ProjectLinkSerializer
 
 User = get_user_model()
@@ -143,6 +143,7 @@ class TeamSummaryView(APIView):
             'new_clients_this_month': clients.filter(date_joined__date__gte=today.replace(day=1)).count(),
             'at_risk': projects.filter(health__in=[Project.Health.AT_RISK, Project.Health.OFF_TRACK]).exclude(status=Project.Status.COMPLETED).count(),
             'new_enquiries': Enquiry.objects.filter(status=Enquiry.Status.NEW).count(),
+            'open_orders': Order.objects.filter(status__in=Order.OPEN).count(),
             'unpaid_invoices': Invoice.objects.filter(status__in=[Invoice.Status.SENT, Invoice.Status.OVERDUE]).count(),
             'unanswered_messages': sum(1 for t in message_threads() if t['needs_reply']),
             'activity': activity,

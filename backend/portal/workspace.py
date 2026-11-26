@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from applications_communications.models import Enquiry
-from .models import ClientNote, Invoice, Message, Milestone, Project, StaffRate, Task, TimeEntry
+from .models import ClientNote, Invoice, Message, Milestone, Order, Project, StaffRate, Task, TimeEntry
 from .team import Staff, message_threads
 
 User = get_user_model()
@@ -415,6 +415,8 @@ def client_activity(client, limit=80):
     add(client.date_joined, 'account', 'Created a client account')
     for e in Enquiry.objects.filter(Q(client=client) | Q(email__iexact=client.email)):
         add(e.created_at, 'lead', f"Sent a brief: {e.get_service_display()}", e.message[:160], f"/team/leads#lead-{e.id}")
+    for o in client.orders.all():
+        add(o.created_at, 'order', f"Ordered {o.service_name}", f"{o.number} · {o.get_status_display()}", f"/team/orders/{o.id}")
     for p in client.projects.all():
         add(p.created_at, 'project', f"Project started: {p.name}", p.summary, f"/team/projects/{p.id}")
     for m in Milestone.objects.filter(project__client=client, completed_at__isnull=False).select_related('project'):
@@ -498,6 +500,9 @@ class TodayView(APIView):
         due.sort(key=lambda t: (t.due_date, t.priority != Task.Priority.HIGH))
         waiting = [t for t in message_threads() if t['needs_reply']]
 
+        # orders waiting on the team: a quote to write, or an accepted quote to start
+        orders = Order.objects.filter(status__in=[Order.Status.SUBMITTED, Order.Status.REVIEWING, Order.Status.ACCEPTED]).select_related('client', 'assignee').order_by('created_at')
+
         return Response({
             'date': today,
             'overdue_invoices': overdue,
@@ -516,13 +521,21 @@ class TodayView(APIView):
             'my_minutes_today': TimeEntry.objects.filter(user=request.user, date=today).aggregate(m=Sum('minutes'))['m'] or 0,
             'waiting_replies': waiting[:5],
             'waiting_replies_count': len(waiting),
+            'orders_waiting': [
+                {
+                    'id': o.id, 'number': o.number, 'service': o.service_name, 'client': o.client.full_name,
+                    'status': o.status, 'status_label': o.get_status_display(),
+                    'assignee': first_name(o.assignee), 'days': (now - (o.accepted_at or o.created_at)).days,
+                }
+                for o in orders
+            ],
         })
 
 
 # ---------------------------------------------------------------- search
 
 class SearchView(APIView):
-    """One box for everything: clients, leads, projects, invoices and tasks."""
+    """One box for everything: clients, leads, orders, projects, invoices and tasks."""
 
     permission_classes = [Staff]
     PER_KIND = 5
@@ -549,6 +562,9 @@ class SearchView(APIView):
 
         for lead in Enquiry.objects.filter(Q(full_name__icontains=q) | Q(email__icontains=q) | Q(phone_number__icontains=q) | Q(message__icontains=q))[:n]:
             results.append({'kind': 'lead', 'id': lead.id, 'title': lead.full_name, 'subtitle': f"{lead.get_service_display()} · {lead.get_status_display()}", 'url': f"/team/leads#lead-{lead.id}"})
+
+        for o in Order.objects.select_related('client').filter(Q(number__icontains=q) | Q(service_name__icontains=q) | Q(client__full_name__icontains=q) | Q(brief__icontains=q))[:n]:
+            results.append({'kind': 'order', 'id': o.id, 'title': f"{o.number} · {o.service_name}", 'subtitle': f"{o.client.full_name} · {o.get_status_display()}", 'url': f"/team/orders/{o.id}"})
 
         for t in Task.objects.select_related('project', 'assignee').filter(Q(title__icontains=q) | Q(notes__icontains=q))[:n]:
             where = f"/team/projects/{t.project_id}" if t.project_id else '/team/work'

@@ -19,7 +19,7 @@ export function TeamDashboard() {
   const today = useApi<Today>('/api/v1/team/today/')
   const { data, error } = useApi<TeamSummary>('/api/v1/team/summary/')
   const t = today.data
-  const needs = t ? t.my_tasks_due.length + t.overdue_invoices.length + t.at_risk_projects.length + t.stalled_leads.length : 0
+  const needs = t ? t.orders_waiting.length + t.my_tasks_due.length + t.overdue_invoices.length + t.at_risk_projects.length + t.stalled_leads.length : 0
   const dateLine = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
@@ -36,6 +36,25 @@ export function TeamDashboard() {
         <Loading error={today.error} />
       ) : (
         <div className="tm-today">
+          {t.orders_waiting.length > 0 && (
+            <Panel title={`Orders waiting on us · ${t.orders_waiting.length}`} className="tm-wide" action={<Link to="/team/orders" className="pt-more">All orders</Link>}>
+              <ul className="tm-prio">
+                {t.orders_waiting.slice(0, 6).map((o) => (
+                  <li key={o.id}>
+                    <Link to={`/team/orders/${o.id}`}>
+                      <strong>{o.client}</strong>
+                      <span className="pt-muted pt-small">
+                        {o.service} · {o.status === 'accepted' ? 'quote accepted, start the project' : 'needs a quote'}
+                        {o.assignee ? ` · ${o.assignee}` : ''}
+                      </span>
+                    </Link>
+                    <span className={`pt-small tm-nowrap ${o.days >= 1 ? 'tm-bad' : 'pt-muted'}`}>{o.days === 0 ? 'Today' : `Waiting ${plural(o.days, 'day')}`}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
+
           <Panel title="Your tasks due" action={<Link to="/team/work" className="pt-more">{plural(t.my_open_tasks, 'open task')}</Link>}>
             <DueTasks tasks={t.my_tasks_due} onDone={today.reload} />
             {t.my_minutes_today > 0 && <p className="pt-muted pt-small tm-foot">You’ve logged {hm(t.my_minutes_today)} today.</p>}
