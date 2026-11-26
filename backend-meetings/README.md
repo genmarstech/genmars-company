@@ -21,7 +21,7 @@ The Cloudflare tunnel sends those two paths to this service (port 8001) and ever
   solutions, and decisions. Decisions stay *proposed* until someone approves them.
 - Action items can become team tasks. After that, the task's status is the one that counts.
 - Notes, the transcript and recordings copied from Google, attendance, and an activity log.
-- The overview page has counts, up next, a month calendar, searchable history and monthly insights.
+- Tabs: Overview, Upcoming, Calendar, Records, Decisions, Action items, Insights and Google Meet. Projects, tasks and clients stay on the team dashboard, linked from the bottom of the sidebar.
 - `python manage.py sync_meetings` pulls Meet links, RSVPs, attendance, transcripts and recordings. It
   retries with backoff and is safe to run again.
 

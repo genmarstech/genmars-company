@@ -6,20 +6,33 @@ import { useApi } from '../useApi'
 import { Icon, LogoMark, type IconName } from './Icon'
 import { Link } from './Link'
 
-type NavItem = { label: string; icon: IconName; to: string; external?: boolean }
+type NavItem = { label: string; icon: IconName; to: string }
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
-// Home, Projects and Tasks live on the team dashboard; the rest is this site.
-const NAV: NavItem[] = [
-  { label: 'Home', icon: 'home', to: `${TEAM_URL}/team`, external: true },
-  { label: 'Projects', icon: 'folder', to: `${TEAM_URL}/team/projects`, external: true },
-  { label: 'Tasks', icon: 'tasks', to: `${TEAM_URL}/team/work`, external: true },
-  { label: 'Meetings', icon: 'video', to: '/' },
-  { label: 'Calendar', icon: 'calendar', to: '/calendar' },
-  { label: 'History', icon: 'history', to: '/history' },
-  { label: 'Analytics', icon: 'chart', to: '/insights' },
-  { label: 'Settings', icon: 'gear', to: '/settings' },
+// Only meetings here; projects, tasks and clients stay on the team dashboard (linked at the bottom).
+const NAV: { group: string; items: NavItem[] }[] = [
+  {
+    group: 'Meetings',
+    items: [
+      { label: 'Overview', icon: 'home', to: '/' },
+      { label: 'Upcoming', icon: 'clock', to: '/upcoming' },
+      { label: 'Calendar', icon: 'calendar', to: '/calendar' },
+      { label: 'Records', icon: 'file', to: '/records' },
+    ],
+  },
+  {
+    group: 'Follow-up',
+    items: [
+      { label: 'Decisions', icon: 'checkCircle', to: '/decisions' },
+      { label: 'Action items', icon: 'tasks', to: '/actions' },
+      { label: 'Insights', icon: 'chart', to: '/insights' },
+    ],
+  },
+  {
+    group: 'Setup',
+    items: [{ label: 'Google Meet', icon: 'video', to: '/settings' }],
+  },
 ]
 
 /** The site frame from the design: sidebar, search bar, then the page. */
@@ -30,7 +43,8 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
   const google = useApi<GoogleStatus>('/api/v1/integrations/google/status/').data
   const search = useRef<HTMLInputElement>(null)
   const initials = (user?.full_name ?? '?').split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
-  const active = (to: string) => (to === '/' ? path === '/' || /^\/\d+$/.test(path) : path.startsWith(to))
+  // a single meeting counts as part of Records
+  const active = (to: string) => (to === '/' ? path === '/' : path.startsWith(to) || (to === '/records' && /^\/\d+$/.test(path)))
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -46,7 +60,7 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
   const find = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const q = search.current?.value.trim() ?? ''
-    navigate(q ? `/history?q=${encodeURIComponent(q)}` : '/history')
+    navigate(q ? `/records?q=${encodeURIComponent(q)}` : '/records')
   }
 
   return (
@@ -60,20 +74,21 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
           </span>
         </Link>
         <nav className="ms-nav" aria-label="Main">
-          {NAV.map((n) =>
-            n.external ? (
-              <a key={n.label} href={n.to} className="ms-nav-link">
-                <Icon name={n.icon} size={20} strokeWidth={1.8} />
-                {n.label}
-              </a>
-            ) : (
-              <Link key={n.label} to={n.to} className="ms-nav-link" aria-current={active(n.to) ? 'page' : undefined} onClick={() => setMenu(false)}>
-                <Icon name={n.icon} size={20} strokeWidth={1.8} />
-                {n.label}
-              </Link>
-            ),
-          )}
+          {NAV.map((g) => (
+            <div key={g.group} className="ms-group">
+              <span className="ms-group-label">{g.group}</span>
+              {g.items.map((n) => (
+                <Link key={n.label} to={n.to} className="ms-nav-link" aria-current={active(n.to) ? 'page' : undefined} onClick={() => setMenu(false)}>
+                  <Icon name={n.icon} size={20} strokeWidth={1.8} />
+                  {n.label}
+                </Link>
+              ))}
+            </div>
+          ))}
         </nav>
+        <a href={`${TEAM_URL}/team`} className="ms-back">
+          <Icon name="left" size={16} /> Team dashboard
+        </a>
         <div className="ms-promo" aria-hidden="true">
           <span className="ms-promo-icon">
             <Icon name="spark" size={20} strokeWidth={1.6} />

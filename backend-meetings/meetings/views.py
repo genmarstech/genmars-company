@@ -328,7 +328,9 @@ class MeetingViewSet(MeetingCreateMixin, viewsets.ModelViewSet):
     pagination_class = None
 
     def get_serializer_class(self):
-        return MeetingListSerializer if self.action == 'list' else MeetingSerializer
+        if self.action == 'list':
+            return UpcomingSerializer if self.request.query_params.get('view') == 'upcoming' else MeetingListSerializer
+        return MeetingSerializer
 
     def get_queryset(self):
         qs = Meeting.objects.select_related('organizer', 'project__client', 'report_approved_by')
@@ -347,7 +349,7 @@ class MeetingViewSet(MeetingCreateMixin, viewsets.ModelViewSet):
         p = self.request.query_params
         now = timezone.now()
         if p.get('view') == 'upcoming':
-            qs = qs.filter(status__in=[Meeting.Status.PLANNED, Meeting.Status.LIVE]).order_by('scheduled_start')
+            qs = qs.filter(status__in=[Meeting.Status.PLANNED, Meeting.Status.LIVE]).prefetch_related('participants').order_by('scheduled_start')
         elif p.get('view') == 'history':
             qs = qs.filter(Q(status__in=[Meeting.Status.COMPLETED, Meeting.Status.CANCELLED, Meeting.Status.FAILED]) | Q(scheduled_start__lt=now - timedelta(hours=12)))
         if p.get('q'):
@@ -763,6 +765,52 @@ class OverviewView(APIView):
             'my_actions': ActionSerializer(mine[:20], many=True).data,
             'google': google_status(request.user),
         })
+
+
+class DecisionsView(APIView):
+    """Every decision from every meeting, newest first. Filters: ?status=proposed|approved|rejected, ?q=, ?project="""
+
+    permission_classes = [Staff]
+
+    def get(self, request):
+        qs = Point.objects.filter(kind=Point.Kind.DECISION).exclude(meeting__status=Meeting.Status.CANCELLED)
+        qs = qs.select_related('meeting__project', 'owner', 'approved_by').order_by('-meeting__scheduled_start', '-id')
+        p = request.query_params
+        if p.get('status'):
+            qs = qs.filter(status__in=p['status'].split(','))
+        if p.get('project'):
+            qs = qs.filter(meeting__project_id=p['project'])
+        if p.get('q'):
+            qs = qs.filter(Q(title__icontains=p['q']) | Q(detail__icontains=p['q']) | Q(meeting__title__icontains=p['q']))
+        rows = []
+        for point in qs[:300]:
+            row = PointSerializer(point).data
+            row.update(meeting=point.meeting_id, meeting_title=point.meeting.title, meeting_date=point.meeting.scheduled_start,
+                       project_name=point.meeting.project.name if point.meeting.project_id else '')
+            rows.append(row)
+        return Response(rows)
+
+
+class ActionsView(APIView):
+    """Action items from every meeting. Filters: ?mine=1, ?assignee=<id>, ?state=open|done, ?q="""
+
+    permission_classes = [Staff]
+
+    def get(self, request):
+        qs = ActionItem.objects.exclude(meeting__status=Meeting.Status.CANCELLED).select_related('meeting', 'assignee', 'task')
+        done = Q(task__isnull=True, status=ActionItem.Status.DONE) | Q(task__status=Task.Status.DONE)
+        p = request.query_params
+        if p.get('mine') == '1':
+            qs = qs.filter(assignee=request.user)
+        if p.get('assignee'):
+            qs = qs.filter(assignee_id=p['assignee'])
+        if p.get('state') == 'open':
+            qs = qs.exclude(done)
+        elif p.get('state') == 'done':
+            qs = qs.filter(done)
+        if p.get('q'):
+            qs = qs.filter(Q(title__icontains=p['q']) | Q(meeting__title__icontains=p['q']))
+        return Response(ActionSerializer(qs[:300], many=True).data)
 
 
 class DirectoryView(APIView):

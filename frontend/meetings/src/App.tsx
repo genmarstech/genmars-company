@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { Login } from './Login'
 import { MeetingDetail } from './MeetingDetail'
-import { Home } from './Home'
-import { CalendarPage, HistoryPage, InsightsPage, SettingsPage } from './Pages'
+import { Home, UpcomingPage } from './Home'
+import { ActionsPage, CalendarPage, DecisionsPage, InsightsPage, RecordsPage, SettingsPage } from './Pages'
 import { navigate, usePathname } from './router'
 import { useSession } from './session'
 
@@ -22,8 +22,15 @@ export default function App() {
   switch (path) {
     case '/calendar':
       return <CalendarPage key={window.location.search} />
+    case '/upcoming':
+      return <UpcomingPage />
+    case '/records':
     case '/history':
-      return <HistoryPage key={window.location.search} />
+      return <RecordsPage key={window.location.search} />
+    case '/decisions':
+      return <DecisionsPage />
+    case '/actions':
+      return <ActionsPage />
     case '/insights':
       return <InsightsPage />
     case '/settings':
