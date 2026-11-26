@@ -8,8 +8,6 @@ import { FinancePage } from './Finance'
 import { Pipeline } from './Pipeline'
 import { TeamInvoices } from './Invoices'
 import { Leads } from './Leads'
-import { MeetingDetail } from './MeetingDetail'
-import { Meetings } from './Meetings'
 import { TeamMessages } from './Messages'
 import { TeamOrderDetail, TeamOrders, TeamServices } from './Orders'
 import { TeamProjectDetail, TeamProjects } from './Projects'
@@ -33,8 +31,6 @@ export function Team({ path }: { path: string }) {
   if (project) return <TeamProjectDetail key={project[1]} id={project[1]} />
   const client = path.match(/^\/team\/clients\/(\d+)$/)
   if (client) return <ClientDetail key={client[1]} id={client[1]} />
-  const meeting = path.match(/^\/team\/meetings\/(\d+)$/)
-  if (meeting) return <MeetingDetail key={meeting[1]} id={meeting[1]} />
   const order = path.match(/^\/team\/orders\/(\d+)$/)
   if (order) return <TeamOrderDetail key={order[1]} id={order[1]} />
   switch (path) {
@@ -44,8 +40,6 @@ export function Team({ path }: { path: string }) {
       return <TeamServices />
     case '/team/work':
       return <MyWork key={window.location.search} />
-    case '/team/meetings':
-      return <Meetings key={window.location.search} />
     case '/team/time':
       return <TimePage />
     case '/team/clients':

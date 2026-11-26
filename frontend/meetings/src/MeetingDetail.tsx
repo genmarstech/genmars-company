@@ -1,20 +1,18 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { Icon } from '../components/Icon'
-import { Link } from '../components/Link'
-import { Empty, Loading, Panel, StatusBadge, TeamLayout } from '../portal/PortalLayout'
-import { formatDate, timeAgo, useApi } from '../portal/useApi'
-import { Field } from './Field'
+import { Icon } from './ui/Icon'
+import { Link } from './ui/Link'
+import { Empty, Loading, Panel, StatusBadge, Layout } from './ui/Layout'
+import { formatDate, timeAgo, useApi } from './useApi'
+import { Field } from './ui/Field'
 import {
   CATEGORIES, canJoin, clock, dayLabel, joinMeeting, reportTone, statusTone, timeRange, toLocalInput,
-  type ActionItem, type MeetingDetail as Meeting, type Participant, type Point, type PointKind,
+  TEAM_URL, useDirectory, type ActionItem, type MeetingDetail as Meeting, type Staff, type Participant, type Point, type PointKind,
 } from './meetingTypes'
 import { formData, hm, isoDate, useMutation } from './shared'
-import type { Staff, TeamProject } from './types'
-import './meetings.css'
 
 export function MeetingDetail({ id }: { id: string }) {
   const { data: m, error, reload } = useApi<Meeting>(`/api/v1/meetings/${id}/`)
-  const staff = useApi<Staff[]>('/api/v1/team/staff/')
+  const directory = useDirectory()
   const [editing, setEditing] = useState(false)
   const [notice, setNotice] = useState('')
   const { busy, message, run } = useMutation()
@@ -22,10 +20,10 @@ export function MeetingDetail({ id }: { id: string }) {
 
   if (!m) {
     return (
-      <TeamLayout title="Meeting">
-        <Link to="/team/meetings" className="pt-back">← All meetings</Link>
+      <Layout title="Meeting">
+        <Link to="/" className="pt-back">← All meetings</Link>
         <Loading error={error} />
-      </TeamLayout>
+      </Layout>
     )
   }
 
@@ -43,11 +41,11 @@ export function MeetingDetail({ id }: { id: string }) {
       reload()
     }
   }
-  const people = staff.data ?? []
+  const people = directory?.staff ?? []
   const open = m.status === 'planned' || m.status === 'live'
 
   return (
-    <TeamLayout
+    <Layout
       title={m.title}
       subtitle={`${dayLabel(m.scheduled_start)} · ${timeRange(m)} · ${m.category_label}`}
       actions={
@@ -62,7 +60,7 @@ export function MeetingDetail({ id }: { id: string }) {
       }
     >
       <div className="mt-topline">
-        <Link to="/team/meetings" className="pt-back">← All meetings</Link>
+        <Link to="/" className="pt-back">← All meetings</Link>
         <span className="tm-badges">
           <StatusBadge tone={statusTone[m.status]}>{m.status === 'planned' && canJoin(m) ? 'Starting soon' : m.status_label}</StatusBadge>
           {m.status !== 'cancelled' && <StatusBadge tone={reportTone[m.report_status]}>Record: {m.report_label.toLowerCase()}</StatusBadge>}
@@ -124,7 +122,7 @@ export function MeetingDetail({ id }: { id: string }) {
           </Panel>
         </div>
       </div>
-    </TeamLayout>
+    </Layout>
   )
 }
 
@@ -170,7 +168,7 @@ function Overview({ m }: { m: Meeting }) {
         <dt>Organizer</dt>
         <dd>{m.organizer_name || '—'}</dd>
         <dt>Project</dt>
-        <dd>{m.project ? <Link to={`/team/projects/${m.project}`}>{m.project_name}</Link> : '—'}</dd>
+        <dd>{m.project ? <a href={`${TEAM_URL}/team/projects/${m.project}`}>{m.project_name}</a> : '—'}</dd>
         <dt>Type</dt>
         <dd>{m.category_label}{m.kind === 'instant' ? ' · instant' : ''}</dd>
         <dt>Meet</dt>
@@ -201,7 +199,7 @@ function Overview({ m }: { m: Meeting }) {
 
 function EditForm({ m, onSaved }: { m: Meeting; onSaved: () => void }) {
   const { busy, errors, message, run } = useMutation()
-  const projects = useApi<TeamProject[]>('/api/v1/team/projects/')
+  const directory = useDirectory()
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const f = formData(e)
@@ -236,7 +234,7 @@ function EditForm({ m, onSaved }: { m: Meeting; onSaved: () => void }) {
       <Field label="Project" error={errors.project}>
         <select name="project" defaultValue={m.project ?? ''}>
           <option value="">None</option>
-          {projects.data?.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.client_name}</option>)}
+          {directory?.projects.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.client_name}</option>)}
         </select>
       </Field>
       <Field label="Description" wide>
@@ -535,7 +533,7 @@ function Actions({ m, onChange, staff }: { m: Meeting; onChange: () => void; sta
                 </span>
               </span>
               {a.task ? (
-                <Link to="/team/work" className="tm-link-btn tm-hide-sm">On task list</Link>
+                <a href={`${TEAM_URL}/team/work`} className="tm-link-btn tm-hide-sm">On task list</a>
               ) : (
                 <button type="button" className="tm-link-btn tm-hide-sm" disabled={busy} onClick={async () => (await run(`${url}${a.id}/task/`, {})) && onChange()}>Make task</button>
               )}

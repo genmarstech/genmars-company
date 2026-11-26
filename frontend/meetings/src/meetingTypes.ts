@@ -1,4 +1,5 @@
-import { ApiError, postJson } from '../auth/session'
+import { ApiError, postJson } from './session'
+import { useApi } from './useApi'
 
 export type MeetingStatus = 'planned' | 'live' | 'completed' | 'cancelled' | 'failed'
 export type ReportStatus = 'draft' | 'review' | 'approved'
@@ -214,3 +215,15 @@ export async function joinMeeting(id: number): Promise<string | null> {
     return e instanceof ApiError && e.message ? e.message : 'Couldn’t open the meeting.'
   }
 }
+
+export type Staff = { id: number; full_name: string; email: string }
+export type ProjectRef = { id: number; name: string; client_name: string }
+export type Directory = { me: Staff & { is_owner: boolean }; staff: Staff[]; projects: ProjectRef[] }
+
+/** The team and open projects from the company database. */
+export function useDirectory() {
+  return useApi<Directory>('/api/v1/meetings/directory/').data
+}
+
+/** The team dashboard on the main site, for projects and the task list. */
+export const TEAM_URL = (import.meta.env.VITE_TEAM_URL || 'https://company-v1-gamma.vercel.app').replace(/\/+$/, '')

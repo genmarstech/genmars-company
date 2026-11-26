@@ -1,18 +1,16 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { ApiError, postJson } from '../auth/session'
-import { Icon } from '../components/Icon'
-import { Link } from '../components/Link'
-import { Empty, Loading, Panel, StatusBadge, TeamLayout } from '../portal/PortalLayout'
-import { formatDate, useApi } from '../portal/useApi'
-import { navigate } from '../router'
-import { Field } from './Field'
+import { ApiError, postJson } from './session'
+import { Icon } from './ui/Icon'
+import { Link } from './ui/Link'
+import { Empty, Loading, Panel, StatusBadge, Layout } from './ui/Layout'
+import { formatDate, useApi } from './useApi'
+import { navigate } from './router'
+import { Field } from './ui/Field'
 import {
   CATEGORIES, canJoin, clock, joinMeeting, dayLabel, reportTone, statusTone, timeRange, viewerZone,
-  type ActionItem, type GoogleStatus, type MeetingDetail, type MeetingRow, type MeetingsOverview,
+  TEAM_URL, useDirectory, type ActionItem, type GoogleStatus, type MeetingDetail, type MeetingRow, type MeetingsOverview,
 } from './meetingTypes'
 import { formData, hm, isoDate, useMutation } from './shared'
-import type { Staff, TeamProject } from './types'
-import './meetings.css'
 
 const GOOGLE_RESULT: Record<string, { tone: 'ok' | 'bad'; text: string }> = {
   connected: { tone: 'ok', text: 'Google is connected. New meetings get a Meet link and a Calendar invite.' },
@@ -37,7 +35,7 @@ export function Meetings() {
     try {
       const m = await postJson<MeetingDetail>('/api/v1/meetings/instant/', {})
       if (tab) tab.location.href = m.meet_uri
-      navigate(`/team/meetings/${m.id}`)
+      navigate(`/${m.id}`)
     } catch (e) {
       tab?.close()
       setStartError(e instanceof ApiError ? e.message : 'Couldn’t start the meeting.')
@@ -47,7 +45,7 @@ export function Meetings() {
   }
 
   return (
-    <TeamLayout
+    <Layout
       title="Meetings"
       subtitle="Plan, run and keep a record of every meeting: what was decided, and who does what next."
       actions={
@@ -68,7 +66,7 @@ export function Meetings() {
         <Panel title="Schedule a meeting">
           <ScheduleForm
             google={o?.google}
-            onSaved={(m) => navigate(`/team/meetings/${m.id}`)}
+            onSaved={(m) => navigate(`/${m.id}`)}
             onCancel={() => setScheduling(false)}
           />
         </Panel>
@@ -95,7 +93,7 @@ export function Meetings() {
             </Panel>
             <div className="pt-side-col">
               <GooglePanel status={o.google} onChange={overview.reload} />
-              <Panel title="Your action items" action={<Link to="/team/work" className="pt-more">My work</Link>}>
+              <Panel title="Your action items" action={<a href={`${TEAM_URL}/team/work`} className="pt-more">My work</a>}>
                 <MyActions items={o.my_actions} onChange={overview.reload} />
               </Panel>
             </div>
@@ -106,7 +104,7 @@ export function Meetings() {
           <Insights o={o} />
         </>
       )}
-    </TeamLayout>
+    </Layout>
   )
 }
 
@@ -140,7 +138,7 @@ function Upcoming({ meetings }: { meetings: MeetingRow[] }) {
             {list.map((m) => (
               <li key={m.id} className={m.status === 'live' ? 'is-live' : ''}>
                 <span className="mt-time">{clock(m.scheduled_start)}</span>
-                <Link to={`/team/meetings/${m.id}`} className="mt-up-main">
+                <Link to={`/${m.id}`} className="mt-up-main">
                   <strong>{m.title}</strong>
                   <span className="pt-muted pt-small">
                     {[m.project_name || m.category_label, `${m.participant_count} ${m.participant_count === 1 ? 'person' : 'people'}`, m.organizer_name.split(' ')[0]].filter(Boolean).join(' · ')}
@@ -238,7 +236,7 @@ function MyActions({ items, onChange }: { items: ActionItem[]; onChange: () => v
               if (await run(`/api/v1/meetings/${a.meeting}/actions/${a.id}/`, { status: 'done' }, 'PATCH')) onChange()
             }}
           />
-          <Link to={`/team/meetings/${a.meeting}`} className="tm-task-main">
+          <Link to={`/${a.meeting}`} className="tm-task-main">
             <strong>{a.title}</strong>
             <span className="pt-muted pt-small">From {a.meeting_title}</span>
           </Link>
@@ -309,7 +307,7 @@ function MeetingCalendar() {
             <div key={key} role="gridcell" className={`mt-cal-day${d.getMonth() !== month.getMonth() ? ' is-out' : ''}${key === today ? ' is-today' : ''}`}>
               <span className="mt-cal-num">{d.getDate()}</span>
               {list.slice(0, 3).map((m) => (
-                <Link key={m.id} to={`/team/meetings/${m.id}`} className={`mt-cal-item mt-cal-item--${m.status}`} title={`${clock(m.scheduled_start)} ${m.title}`}>
+                <Link key={m.id} to={`/${m.id}`} className={`mt-cal-item mt-cal-item--${m.status}`} title={`${clock(m.scheduled_start)} ${m.title}`}>
                   <span className="mt-cal-time">{clock(m.scheduled_start)}</span> {m.title}
                 </Link>
               ))}
@@ -331,7 +329,7 @@ function History() {
   const [category, setCategory] = useState('')
   const [project, setProject] = useState('')
   const [mine, setMine] = useState(false)
-  const projects = useApi<TeamProject[]>('/api/v1/team/projects/')
+  const directory = useDirectory()
   const query = new URLSearchParams({ view: 'history' })
   if (term) query.set('q', term)
   if (status) query.set('status', status)
@@ -374,7 +372,7 @@ function History() {
           <span className="sr-only">Project</span>
           <select value={project} onChange={(e) => setProject(e.target.value)}>
             <option value="">Any project</option>
-            {projects.data?.map((p) => (
+            {directory?.projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -406,7 +404,7 @@ function History() {
               {data.map((m) => (
                 <tr key={m.id}>
                   <td>
-                    <Link to={`/team/meetings/${m.id}`} className="mt-cell-link">
+                    <Link to={`/${m.id}`} className="mt-cell-link">
                       <strong>{m.title}</strong>
                       <span className="pt-muted pt-small">
                         {[m.project_name || m.category_label, m.decision_count ? `${m.decision_count} decision${m.decision_count === 1 ? '' : 's'}` : '', m.has_transcript ? 'transcript' : ''].filter(Boolean).join(' · ')}
@@ -470,8 +468,7 @@ function Insights({ o }: { o: MeetingsOverview }) {
 
 export function ScheduleForm({ google, onSaved, onCancel }: { google?: GoogleStatus; onSaved: (m: MeetingDetail) => void; onCancel: () => void }) {
   const { busy, errors, message, run } = useMutation()
-  const staff = useApi<Staff[]>('/api/v1/team/staff/')
-  const projects = useApi<TeamProject[]>('/api/v1/team/projects/')
+  const directory = useDirectory()
   const [team, setTeam] = useState<number[]>([])
   const [start, setStart] = useState('')
 
@@ -527,9 +524,7 @@ export function ScheduleForm({ google, onSaved, onCancel }: { google?: GoogleSta
       <Field label="Project" error={errors.project}>
         <select name="project" defaultValue="">
           <option value="">None</option>
-          {projects.data
-            ?.filter((p) => p.status !== 'completed')
-            .map((p) => (
+          {directory?.projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} · {p.client_name}
               </option>
@@ -538,7 +533,7 @@ export function ScheduleForm({ google, onSaved, onCancel }: { google?: GoogleSta
       </Field>
       <fieldset className="mt-people tm-wide">
         <legend>Team</legend>
-        {staff.data?.map((s) => (
+        {directory?.staff.map((s) => (
           <label key={s.id} className="mt-person-pick">
             <input
               type="checkbox"

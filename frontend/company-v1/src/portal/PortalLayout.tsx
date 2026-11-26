@@ -22,7 +22,8 @@ const clientNav: NavItem[] = [
 const teamNav: NavItem[] = [
   { to: '/team', label: 'Today', icon: 'layout' },
   { to: '/team/work', label: 'My work', icon: 'check' },
-  { to: '/team/meetings', label: 'Meetings', icon: 'video' },
+  // the Meetings tool is its own site (frontend/meetings)
+  { to: import.meta.env.VITE_MEETINGS_URL || 'https://meetings.genmars.co.ke', label: 'Meetings', icon: 'video' },
   { to: '/team/clients', label: 'Clients', icon: 'team' },
   { to: '/team/projects', label: 'Projects', icon: 'code' },
   { to: '/team/orders', label: 'Orders', icon: 'cart' },
@@ -76,7 +77,13 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
           </button>
         )}
         <nav aria-label={role === 'Client' ? 'Portal' : 'Team'} className="pt-nav">
-          {nav.map((n) => (
+          {nav.map((n) =>
+            n.to.startsWith('http') ? (
+              <a key={n.to} href={n.to} className="pt-nav-link">
+                <Icon name={n.icon} size={18} strokeWidth={1.8} />
+                {n.label}
+              </a>
+            ) : (
             <Link
               key={n.to}
               to={n.to}
@@ -87,7 +94,8 @@ export function PortalLayout({ title, subtitle, actions, children, nav = clientN
               <Icon name={n.icon} size={18} strokeWidth={1.8} />
               {n.label}
             </Link>
-          ))}
+            ),
+          )}
         </nav>
         <div className="pt-user">
           <span className="pt-avatar" aria-hidden="true">
