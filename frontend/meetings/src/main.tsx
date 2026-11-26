@@ -6,11 +6,14 @@ import './styles/team.css'
 import './styles/meetings.css'
 import './styles/home.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './ui/ErrorBoundary'
 
 document.body.classList.add('theme-light')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

@@ -95,7 +95,7 @@ export function Home() {
       ) : (
         <>
           <div className="mh-stats">
-            <StatCard tone="blue" icon="calendar" value={o.upcoming_count} label="Upcoming Meetings" note={`${o.upcoming_this_week} in the next 7 days`} series={o.trends.upcoming} />
+            <StatCard tone="blue" icon="calendar" value={o.upcoming_count} label="Upcoming Meetings" note={`${o.upcoming_this_week} in the next 7 days`} series={o.trends?.upcoming} />
             <StatCard
               tone="purple"
               icon="checkCircle"
@@ -103,16 +103,16 @@ export function Home() {
               label="This Month"
               note={o.this_month_change === null ? 'First month on record' : `${o.this_month_change >= 0 ? '+' : ''}${o.this_month_change}% vs last month`}
               up={o.this_month_change === null || o.this_month_change >= 0}
-              series={o.trends.held}
+              series={o.trends?.held}
             />
-            <StatCard tone="green" icon="check" value={o.completed} label="Completed" note={`+${o.completed_this_week} this week`} series={o.trends.completed} />
+            <StatCard tone="green" icon="check" value={o.completed} label="Completed" note={`+${o.completed_this_week} this week`} series={o.trends?.completed} />
             <StatCard
               tone="amber"
               icon="file"
               value={o.records_approved}
               label="Meeting Records"
               note={o.needs_review ? `${o.needs_review} waiting for review` : `+${o.records_this_week} approved this week`}
-              series={o.trends.records}
+              series={o.trends?.records}
             />
           </div>
 
@@ -202,7 +202,7 @@ export function Home() {
   )
 }
 
-function Sparkline({ values }: { values: number[] }) {
+function Sparkline({ values = [] }: { values?: number[] }) {
   const w = 96
   const h = 40
   const max = Math.max(1, ...values)
@@ -217,7 +217,7 @@ function Sparkline({ values }: { values: number[] }) {
   )
 }
 
-function StatCard({ tone, icon, value, label, note, series, up = true }: { tone: string; icon: IconName; value: number; label: string; note: string; series: number[]; up?: boolean }) {
+function StatCard({ tone, icon, value, label, note, series, up = true }: { tone: string; icon: IconName; value: number; label: string; note: string; series?: number[]; up?: boolean }) {
   return (
     <div className={`mh-stat mh-tone-${tone}`}>
       <span className="mh-stat-icon">
@@ -241,7 +241,7 @@ function initials(name: string) {
 
 const minutesBetween = (m: MeetingRow) => (m.scheduled_end ? Math.round((new Date(m.scheduled_end).getTime() - new Date(m.scheduled_start).getTime()) / 60000) : null)
 
-function UpcomingList({ meetings }: { meetings: (MeetingRow & { people: string[] })[] }) {
+function UpcomingList({ meetings }: { meetings: (MeetingRow & { people?: string[] })[] }) {
   const [error, setError] = useState('')
   const [open, setOpen] = useState<number | null>(null)
   if (meetings.length === 0) return <Empty>No meetings coming up. Schedule one, or start a call now.</Empty>
@@ -250,6 +250,7 @@ function UpcomingList({ meetings }: { meetings: (MeetingRow & { people: string[]
       {error && <p className="pt-error">{error}</p>}
       <ul className="mh-list">
         {meetings.map((m) => {
+          const people = m.people ?? []
           const d = new Date(m.scheduled_start)
           const kind = KIND_ICON[m.category] ?? KIND_ICON.other
           const mins = minutesBetween(m)
@@ -275,10 +276,10 @@ function UpcomingList({ meetings }: { meetings: (MeetingRow & { people: string[]
                 </span>
               </Link>
               <span className="mh-people" aria-label={`${m.participant_count} people`}>
-                {m.people.slice(0, 3).map((p) => (
+                {people.slice(0, 3).map((p) => (
                   <span key={p} className="mh-face" title={p}>{initials(p)}</span>
                 ))}
-                {m.people.length > 3 && <span className="mh-face mh-face--more">+{m.people.length - 3}</span>}
+                {people.length > 3 && <span className="mh-face mh-face--more">+{people.length - 3}</span>}
               </span>
               <span className={`mh-pill mh-pill--${m.status === 'live' ? 'live' : joinable ? 'soon' : 'scheduled'}`}>
                 {m.status === 'live' ? 'Live now' : joinable ? 'Upcoming' : 'Scheduled'}
@@ -364,9 +365,9 @@ function MiniCalendar() {
 
 /** Everything coming up, grouped by day, with the same rows as the overview. */
 export function UpcomingPage() {
-  const { data, error } = useApi<(MeetingRow & { people: string[] })[]>('/api/v1/meetings/?view=upcoming')
+  const { data, error } = useApi<(MeetingRow & { people?: string[] })[]>('/api/v1/meetings/?view=upcoming')
   const days = useMemo(() => {
-    const out: [string, (MeetingRow & { people: string[] })[]][] = []
+    const out: [string, (MeetingRow & { people?: string[] })[]][] = []
     for (const m of data ?? []) {
       const label = new Date(m.scheduled_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
       const last = out[out.length - 1]
