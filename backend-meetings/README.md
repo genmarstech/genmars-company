@@ -54,7 +54,7 @@ The Cloudflare tunnel sends those two paths to this service (port 8001) and ever
    This should print 401 (meaning "sign in first"), not 404.
 6. **Frontend on Vercel**: add a new project from this repo.
    - Root Directory `frontend/meetings`, framework Vite.
-   - Optional env `VITE_TEAM_URL`, the team dashboard's address (default `https://company-v1-gamma.vercel.app`).
+   - Optional env `VITE_TEAM_URL`, the team dashboard's address (default `https://www.genmars.co.ke`).
    - Then in Settings → Domains, add `meetings.genmars.co.ke`.
 7. **DNS** for genmars.co.ke: add the record Vercel shows for the subdomain. That is usually
    `CNAME meetings → cname.vercel-dns.com`. If the zone is on Cloudflare, set it to **DNS only** (grey cloud).
