@@ -18,7 +18,7 @@ services:
       DJANGO_CORS_ALLOWED_ORIGINS: ${SITE_ORIGINS:-https://meetings.genmars.co.ke}
       MEETINGS_URL: ${MEETINGS_URL:-https://meetings.genmars.co.ke}
     ports:
-      # nginx sends api.genmars.co.ke/api/v1/meetings/ and /api/v1/integrations/ here
+      # the Cloudflare tunnel sends api.genmars.co.ke/api/v1/meetings/ and /api/v1/integrations/google/ here
       - "127.0.0.1:${MEETINGS_API_PORT:-8001}:8000"
     networks:
       - genmars

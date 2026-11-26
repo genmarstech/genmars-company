@@ -11,8 +11,8 @@ The team's meetings tool, as its own service:
   Only staff get in. Guests join through Meet and never see meeting records.
 
 Requests reach it at `https://api.genmars.co.ke/api/v1/meetings/...` and `/api/v1/integrations/google/...`.
-nginx routes those two paths to this service (port 8001) and everything else to the main API (port 8000).
-So Google's redirect URI and CORS stay on the one API host.
+The Cloudflare tunnel sends those two paths to this service (port 8001) and everything else to the main API
+(port 8000). So Google's redirect URI and CORS stay on the one API host, and no new API hostname is needed.
 
 ## What it does
 
@@ -40,15 +40,25 @@ So Google's redirect URI and CORS stay on the one API host.
    ```
 4. **Main API**: run `cd backend && docker compose up -d`. This lets it accept sign-ins from
    meetings.genmars.co.ke (its CORS list now includes that origin).
-5. **nginx**: use `backend/deploy/nginx-api.genmars.co.ke.conf`. It adds the two meetings locations. Then
-   reload with `sudo nginx -t && sudo systemctl reload nginx`.
+5. **Cloudflare tunnel**: in `/etc/cloudflared/config.yml`, add this rule *above* the existing
+   `api.genmars.co.ke` rule (full example in `backend/deploy/cloudflared.yml`):
+   ```yaml
+     - hostname: api.genmars.co.ke
+       path: ^/api/v1/(meetings|integrations/google)/
+       service: http://127.0.0.1:8001
+       originRequest:
+         httpHostHeader: api.genmars.co.ke
+   ```
+   Then run `sudo systemctl restart cloudflared`. Check it with
+   `curl -s -o /dev/null -w '%{http_code}' https://api.genmars.co.ke/api/v1/meetings/overview/`.
+   This should print 401 (meaning "sign in first"), not 404.
 6. **Frontend on Vercel**: add a new project from this repo.
    - Root Directory `frontend/meetings`, framework Vite.
    - Optional env `VITE_TEAM_URL`, the team dashboard's address (default `https://company-v1-gamma.vercel.app`).
    - Then in Settings → Domains, add `meetings.genmars.co.ke`.
 7. **DNS** for genmars.co.ke: add the record Vercel shows for the subdomain. That is usually
    `CNAME meetings → cname.vercel-dns.com`. If the zone is on Cloudflare, set it to **DNS only** (grey cloud).
-   The Cloudflare tunnel doesn't change, because the API stays on `api.genmars.co.ke`.
+   This record is for the website only. The API stays on `api.genmars.co.ke` through the tunnel.
 8. **Background sync**: add a crontab line on the server.
    ```
    */15 * * * * docker exec genmars_meetings_api python manage.py sync_meetings

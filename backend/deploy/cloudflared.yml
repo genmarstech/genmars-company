@@ -1,10 +1,20 @@
-# Example cloudflared config (usually ~/.cloudflared/config.yml).
-# Create the tunnel first:  cloudflared tunnel create genmars-api
-# Route DNS:                cloudflared tunnel route dns genmars-api api.genmars.co.ke
-tunnel: genmars-api
-credentials-file: /home/YOUR_USER/.cloudflared/<TUNNEL_ID>.json
+# Example cloudflared config (on this machine: /etc/cloudflared/config.yml).
+# Create the tunnel first:  cloudflared tunnel create genmars
+# Route DNS:                cloudflared tunnel route dns genmars api.genmars.co.ke
+#
+# Rules are matched top to bottom. The Meetings API (backend-meetings/, port 8001) takes its two paths;
+# everything else on api.genmars.co.ke goes to the main API (port 8000).
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
 
 ingress:
   - hostname: api.genmars.co.ke
-    service: http://127.0.0.1:8080
+    path: ^/api/v1/(meetings|integrations/google)/
+    service: http://127.0.0.1:8001
+    originRequest:
+      httpHostHeader: api.genmars.co.ke
+  - hostname: api.genmars.co.ke
+    service: http://127.0.0.1:8000
+    originRequest:
+      httpHostHeader: api.genmars.co.ke
   - service: http_status:404
