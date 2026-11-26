@@ -694,7 +694,7 @@
   }
   .pt-two,
   .pt-detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 860px) {
@@ -760,4 +760,62 @@
   font-size: 14px;
   color: var(--text-2);
   white-space: pre-wrap;
+}
+
+/* Phones: wide tables become one card per row, each value labelled. */
+@media (max-width: 640px) {
+  .pt-stack,
+  .pt-stack tbody,
+  .pt-stack tfoot,
+  .pt-stack tr,
+  .pt-stack td,
+  .pt-stack th {
+    display: block;
+  }
+  .pt-stack thead {
+    display: none;
+  }
+  .pt-stack tr {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .pt-stack tbody tr:first-child {
+    border-top: 0;
+    padding-top: 2px;
+  }
+  .pt-stack tr:last-child {
+    padding-bottom: 0;
+  }
+  .pt-stack td,
+  .pt-stack th {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+  .pt-stack td:first-child,
+  .pt-stack th:first-child {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  .pt-stack td[data-label]:not(:first-child) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: end;
+    column-gap: 16px;
+    min-height: 30px;
+    padding: 3px 0;
+    text-align: right !important;
+  }
+  .pt-stack td[data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    grid-row: 1 / span 3;
+    justify-self: start;
+    font-size: 13px;
+    color: var(--subtle);
+    text-align: left;
+  }
+  .pt-stack td.pt-num {
+    white-space: normal;
+  }
 }

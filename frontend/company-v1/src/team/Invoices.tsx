@@ -49,7 +49,7 @@ export function TeamInvoices() {
           <Empty>No invoices yet.</Empty>
         ) : (
           <div className="pt-table-wrap">
-            <table className="pt-table">
+            <table className="pt-table pt-stack">
               <thead>
                 <tr>
                   <th scope="col">Invoice</th>
@@ -63,15 +63,15 @@ export function TeamInvoices() {
               <tbody>
                 {data.map((i) => (
                   <tr key={i.id} id={`invoice-${i.id}`}>
-                    <td>
+                    <td data-label="Invoice">
                       <strong>{i.number}</strong>
                       <span className="pt-muted pt-small pt-block">{i.description || i.project_name || '—'}</span>
                     </td>
-                    <td>{i.client_name}</td>
-                    <td>{formatDate(i.issued_on)}</td>
-                    <td>{i.status === 'paid' ? `Paid ${formatDate(i.paid_on)}` : formatDate(i.due_on)}</td>
-                    <td className="pt-num">{kes(i.amount)}</td>
-                    <td>
+                    <td data-label="Client">{i.client_name}</td>
+                    <td data-label="Issued">{formatDate(i.issued_on)}</td>
+                    <td data-label="Due">{i.status === 'paid' ? `Paid ${formatDate(i.paid_on)}` : formatDate(i.due_on)}</td>
+                    <td data-label="Amount" className="pt-num">{kes(i.amount)}</td>
+                    <td data-label="Status">
                       <span className="tm-status-edit">
                         <select aria-label={`Change status of ${i.number}`} value={i.status} disabled={busy} onChange={(e) => setStatus(i, e.target.value)}>
                           {STATUSES.map((s) => (

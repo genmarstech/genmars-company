@@ -163,8 +163,13 @@
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
 }
-.ms-menu-btn {
+.ms-menu-btn,
+.ms-scrim {
   display: none;
+}
+html.ms-lock,
+html.ms-lock body {
+  overflow: hidden;
 }
 .ms-search {
   flex: 1;
@@ -967,10 +972,35 @@
     visibility: hidden;
     transform: translateX(-100%);
   }
+  .ms-side {
+    width: min(280px, 84vw);
+    height: 100dvh;
+    overscroll-behavior: contain;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.22s;
+  }
   .ms--menu .ms-side {
     visibility: visible;
     transform: none;
-    box-shadow: 0 0 0 100vmax rgba(11, 21, 48, 0.3);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 0 60px rgba(15, 30, 70, 0.22);
+  }
+  .ms-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    border: 0;
+    padding: 0;
+    background: rgba(11, 21, 48, 0.28);
+    cursor: default;
+  }
+  .ms-nav-link {
+    min-height: 44px;
+  }
+  .ms input:not([type='checkbox']):not([type='radio']),
+  .ms select,
+  .ms textarea {
+    font-size: 16px;
   }
   .ms-menu-btn {
     display: inline-flex;
@@ -1008,5 +1038,20 @@
   }
   .mh-insights dd {
     font-size: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ms-top .pt-icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .mh-push {
+    white-space: nowrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-side {
+    transition: none !important;
   }
 }

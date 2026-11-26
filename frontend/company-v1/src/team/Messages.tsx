@@ -32,7 +32,7 @@ export function TeamMessages() {
 
   return (
     <TeamLayout title="Messages" subtitle="Conversations with clients. Replies are emailed to them too.">
-      <div className="tm-inbox">
+      <div className={`tm-inbox${client ? ' tm-inbox--open' : ''}`}>
         <Panel className="tm-threads">
           {!threads.data ? (
             <Loading error={threads.error} />
@@ -56,7 +56,17 @@ export function TeamMessages() {
           )}
         </Panel>
 
-        <Panel className="pt-chat" title={current?.client_name}>
+        <Panel
+          className="pt-chat"
+          title={current?.client_name}
+          action={
+            client && (
+              <button type="button" className="tm-inbox-back" onClick={() => setClient('')}>
+                ← All conversations
+              </button>
+            )
+          }
+        >
           {!client ? (
             <Empty>Choose a conversation.</Empty>
           ) : (

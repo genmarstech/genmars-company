@@ -50,7 +50,7 @@ export function TeamProjects() {
           <Empty>No projects yet. Create one for a client to show it in their portal.</Empty>
         ) : (
           <div className="pt-table-wrap">
-            <table className="pt-table">
+            <table className="pt-table pt-stack">
               <thead>
                 <tr>
                   <th scope="col">Project</th>
@@ -63,13 +63,13 @@ export function TeamProjects() {
               <tbody>
                 {data.map((p) => (
                   <tr key={p.id} className="tm-click" onClick={() => navigate(`/team/projects/${p.id}`)}>
-                    <td>
+                    <td data-label="Project">
                       <Link to={`/team/projects/${p.id}`}>
                         <strong>{p.name}</strong>
                       </Link>
                     </td>
-                    <td>{p.client_name}</td>
-                    <td>
+                    <td data-label="Client">{p.client_name}</td>
+                    <td data-label="Status">
                       <span className="tm-badges">
                         <StatusBadge tone={p.status === 'completed' ? 'green' : 'blue'}>{p.status_label}</StatusBadge>
                         {p.status !== 'completed' && p.health !== 'on_track' && (
@@ -77,10 +77,10 @@ export function TeamProjects() {
                         )}
                       </span>
                     </td>
-                    <td className="tm-progress-cell">
+                    <td data-label="Progress" className="tm-progress-cell">
                       <ProgressBar value={p.progress} /> {p.progress}%
                     </td>
-                    <td>{formatDate(p.due_date)}</td>
+                    <td data-label="Due">{formatDate(p.due_date)}</td>
                   </tr>
                 ))}
               </tbody>

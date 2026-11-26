@@ -307,6 +307,12 @@ textarea::placeholder {
 .btn[disabled]:hover {
   background: var(--cobalt);
 }
+/* phones keep :hover after a tap, so a disabled ghost button must not turn solid blue */
+.btn--ghost[disabled]:hover {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--white);
+}
 
 .text-link {
   display: inline-flex;

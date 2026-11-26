@@ -89,7 +89,7 @@ export function TeamOrders() {
           <Empty>No orders here.</Empty>
         ) : (
           <div className="pt-table-wrap">
-            <table className="pt-table od-table">
+            <table className="pt-table pt-stack od-table">
               <thead>
                 <tr>
                   <th scope="col">Order</th>
@@ -103,7 +103,7 @@ export function TeamOrders() {
               <tbody>
                 {data.map((o) => (
                   <tr key={o.id}>
-                    <td>
+                    <td data-label="Order">
                       <Link to={`/team/orders/${o.id}`} className="od-cell-link">
                         <strong>{o.service_name}</strong>
                         <span className="pt-muted pt-small">
@@ -111,18 +111,18 @@ export function TeamOrders() {
                         </span>
                       </Link>
                     </td>
-                    <td>
+                    <td data-label="Client">
                       <Link to={`/team/clients/${o.client}`}>{o.client_name}</Link>
                       {o.company_name && <span className="pt-muted pt-small pt-block">{o.company_name}</span>}
                     </td>
-                    <td className="pt-num">
+                    <td data-label="Price" className="pt-num">
                       {o.quoted_price ? `${kes(o.quoted_price)}${perMonth(o)}` : <span className="pt-muted">from {kes(o.starting_price)}</span>}
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <StatusBadge tone={orderTone[o.status]}>{o.status_label}</StatusBadge>
                     </td>
-                    <td className="pt-small">{nextStep(o)}</td>
-                    <td className="pt-small">{o.assignee_name ? o.assignee_name.split(' ')[0] : <span className="pt-muted">Nobody</span>}</td>
+                    <td data-label="Next" className="pt-small">{nextStep(o)}</td>
+                    <td data-label="Owner" className="pt-small">{o.assignee_name ? o.assignee_name.split(' ')[0] : <span className="pt-muted">Nobody</span>}</td>
                   </tr>
                 ))}
               </tbody>

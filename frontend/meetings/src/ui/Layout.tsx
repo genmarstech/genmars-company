@@ -57,6 +57,23 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // the phone menu closes on navigation and Escape, and the page behind it stays still
+  const [menuPath, setMenuPath] = useState(path)
+  if (menuPath !== path) {
+    setMenuPath(path)
+    setMenu(false)
+  }
+  useEffect(() => {
+    if (!menu) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenu(false)
+    document.addEventListener('keydown', onKey)
+    document.documentElement.classList.add('ms-lock')
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.documentElement.classList.remove('ms-lock')
+    }
+  }, [menu])
+
   const find = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const q = search.current?.value.trim() ?? ''
@@ -65,7 +82,7 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
 
   return (
     <div className={`ms${menu ? ' ms--menu' : ''}`}>
-      <aside className="ms-side">
+      <aside className="ms-side" id="ms-side">
         <Link to="/" className="ms-brand" aria-label="Genmars Meetings">
           <LogoMark size={40} />
           <span className="ms-word">
@@ -101,10 +118,12 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
         </p>
       </aside>
 
+      {menu && <button type="button" className="ms-scrim" aria-label="Close menu" tabIndex={-1} onClick={() => setMenu(false)} />}
+
       <div className="ms-main">
         <header className="ms-top">
-          <button type="button" className="pt-icon-btn ms-menu-btn" aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
-            <Icon name={menu ? 'close' : 'tasks'} size={20} />
+          <button type="button" className="pt-icon-btn ms-menu-btn" aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} aria-controls="ms-side" onClick={() => setMenu((m) => !m)}>
+            <Icon name={menu ? 'close' : 'menu'} size={20} />
           </button>
           <form className="ms-search" role="search" onSubmit={find}>
             <Icon name="search" size={18} />
