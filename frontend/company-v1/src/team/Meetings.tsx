@@ -1,0 +1,578 @@
+import { useMemo, useState, type FormEvent } from 'react'
+import { ApiError, postJson } from '../auth/session'
+import { Icon } from '../components/Icon'
+import { Link } from '../components/Link'
+import { Empty, Loading, Panel, StatusBadge, TeamLayout } from '../portal/PortalLayout'
+import { formatDate, useApi } from '../portal/useApi'
+import { navigate } from '../router'
+import { Field } from './Field'
+import {
+  CATEGORIES, canJoin, clock, joinMeeting, dayLabel, reportTone, statusTone, timeRange, viewerZone,
+  type ActionItem, type GoogleStatus, type MeetingDetail, type MeetingRow, type MeetingsOverview,
+} from './meetingTypes'
+import { formData, hm, isoDate, useMutation } from './shared'
+import type { Staff, TeamProject } from './types'
+import './meetings.css'
+
+const GOOGLE_RESULT: Record<string, { tone: 'ok' | 'bad'; text: string }> = {
+  connected: { tone: 'ok', text: 'Google is connected. New meetings get a Meet link and a Calendar invite.' },
+  denied: { tone: 'bad', text: 'Google sign-in was cancelled, so nothing changed.' },
+  failed: { tone: 'bad', text: 'Google didn’t accept the sign-in. Check the OAuth client settings and try again.' },
+  invalid: { tone: 'bad', text: 'That sign-in link expired or wasn’t started by an owner. Start again from here.' },
+}
+
+export function Meetings() {
+  const params = new URLSearchParams(window.location.search)
+  const [scheduling, setScheduling] = useState(params.get('new') === '1')
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState('')
+  const overview = useApi<MeetingsOverview>('/api/v1/meetings/overview/')
+  const o = overview.data
+  const googleResult = GOOGLE_RESULT[params.get('google') ?? '']
+
+  const startInstant = async () => {
+    setStarting(true)
+    setStartError('')
+    const tab = window.open('', '_blank')
+    try {
+      const m = await postJson<MeetingDetail>('/api/v1/meetings/instant/', {})
+      if (tab) tab.location.href = m.meet_uri
+      navigate(`/team/meetings/${m.id}`)
+    } catch (e) {
+      tab?.close()
+      setStartError(e instanceof ApiError ? e.message : 'Couldn’t start the meeting.')
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  return (
+    <TeamLayout
+      title="Meetings"
+      subtitle="Plan, run and keep a record of every meeting: what was decided, and who does what next."
+      actions={
+        <>
+          <button type="button" className="btn btn--sm btn--ghost" disabled={starting || (o ? !o.google.connected : true)} title={o && !o.google.connected ? 'Connect Google first' : undefined} onClick={startInstant}>
+            <Icon name="video" size={16} /> {starting ? 'Starting…' : 'Start now'}
+          </button>
+          <button type="button" className="btn btn--sm" onClick={() => setScheduling((s) => !s)}>
+            {scheduling ? 'Close' : 'Schedule meeting'}
+          </button>
+        </>
+      }
+    >
+      {googleResult && <p className={`mt-banner mt-banner--${googleResult.tone}`} role="status">{googleResult.text}</p>}
+      {startError && <p className="pt-error">{startError}</p>}
+
+      {scheduling && (
+        <Panel title="Schedule a meeting">
+          <ScheduleForm
+            google={o?.google}
+            onSaved={(m) => navigate(`/team/meetings/${m.id}`)}
+            onCancel={() => setScheduling(false)}
+          />
+        </Panel>
+      )}
+
+      {!o ? (
+        <Loading error={overview.error} />
+      ) : (
+        <>
+          <div className="pt-stats">
+            <Stat label="Coming up" value={o.upcoming_count} note={o.upcoming[0] ? `Next: ${dayLabel(o.upcoming[0].scheduled_start)}, ${clock(o.upcoming[0].scheduled_start)}` : 'Nothing scheduled'} />
+            <Stat label="Held this month" value={o.this_month} note={o.insights.minutes_this_month ? `${hm(o.insights.minutes_this_month)} in meetings` : 'No time logged yet'} />
+            <Stat
+              label="Records approved"
+              value={o.records_approved}
+              note={o.needs_review ? `${o.needs_review} waiting for review` : o.completed ? `of ${o.completed} finished meetings` : 'Approve a summary after each meeting'}
+            />
+            <Stat label="Open action items" value={o.open_actions} note={o.my_actions.length ? `${o.my_actions.length} of them yours` : 'None of them yours'} />
+          </div>
+
+          <div className="pt-two">
+            <Panel title="Up next" action={<span className="pt-muted pt-small">Your time zone</span>}>
+              <Upcoming meetings={o.upcoming} />
+            </Panel>
+            <div className="pt-side-col">
+              <GooglePanel status={o.google} onChange={overview.reload} />
+              <Panel title="Your action items" action={<Link to="/team/work" className="pt-more">My work</Link>}>
+                <MyActions items={o.my_actions} onChange={overview.reload} />
+              </Panel>
+            </div>
+          </div>
+
+          <MeetingCalendar />
+          <History />
+          <Insights o={o} />
+        </>
+      )}
+    </TeamLayout>
+  )
+}
+
+function Stat({ label, value, note }: { label: string; value: number; note: string }) {
+  return (
+    <div className="pt-stat">
+      <span className="pt-stat-label">{label}</span>
+      <span className="pt-stat-value">{value}</span>
+      <span className="pt-stat-note">{note}</span>
+    </div>
+  )
+}
+
+function Upcoming({ meetings }: { meetings: MeetingRow[] }) {
+  const [error, setError] = useState('')
+  if (meetings.length === 0) return <Empty>No meetings coming up. Schedule one, or start a call now.</Empty>
+  const days: [string, MeetingRow[]][] = []
+  for (const m of meetings) {
+    const label = m.status === 'live' ? 'Happening now' : dayLabel(m.scheduled_start)
+    const last = days[days.length - 1]
+    if (last && last[0] === label) last[1].push(m)
+    else days.push([label, [m]])
+  }
+  return (
+    <div className="mt-days">
+      {error && <p className="pt-error">{error}</p>}
+      {days.map(([label, list]) => (
+        <section key={label}>
+          <h3 className="mt-day">{label}</h3>
+          <ul className="mt-upcoming">
+            {list.map((m) => (
+              <li key={m.id} className={m.status === 'live' ? 'is-live' : ''}>
+                <span className="mt-time">{clock(m.scheduled_start)}</span>
+                <Link to={`/team/meetings/${m.id}`} className="mt-up-main">
+                  <strong>{m.title}</strong>
+                  <span className="pt-muted pt-small">
+                    {[m.project_name || m.category_label, `${m.participant_count} ${m.participant_count === 1 ? 'person' : 'people'}`, m.organizer_name.split(' ')[0]].filter(Boolean).join(' · ')}
+                  </span>
+                </Link>
+                {canJoin(m) ? (
+                  <button type="button" className="btn btn--sm" onClick={async () => setError((await joinMeeting(m.id)) ?? '')}>
+                    Join
+                  </button>
+                ) : m.conference_status === 'pending' ? (
+                  <span className="pt-muted pt-small">Link on its way</span>
+                ) : !m.meet_uri ? (
+                  <span className="pt-muted pt-small">No Meet link</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+function GooglePanel({ status, onChange }: { status: GoogleStatus; onChange: () => void }) {
+  const { busy, message, run } = useMutation()
+  const [opening, setOpening] = useState(false)
+  const connect = async () => {
+    setOpening(true)
+    const res = (await run('/api/v1/integrations/google/connect/', undefined, 'GET')) as { url?: string } | null
+    if (res?.url) window.location.href = res.url
+    else setOpening(false)
+  }
+  const disconnect = async () => {
+    if (await run('/api/v1/integrations/google/disconnect/', {})) onChange()
+  }
+  const tone = status.connected ? 'green' : status.status === 'expired' ? 'amber' : 'gray'
+
+  return (
+    <Panel title="Google Meet & Calendar" action={<StatusBadge tone={tone}>{status.status_label}</StatusBadge>}>
+      {message && <p className="pt-error">{message}</p>}
+      {!status.configured ? (
+        <p className="pt-muted pt-small">The server doesn’t have the Google OAuth client yet. Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI to backend/.env and restart the API.</p>
+      ) : status.account_email && status.status !== 'disconnected' ? (
+        <dl className="pt-info mt-google">
+          <dt>Account</dt>
+          <dd>{status.account_email}</dd>
+          <dt>Connected by</dt>
+          <dd>
+            {status.connected_by || '—'}
+            {status.connected_at && <span className="pt-muted pt-small pt-block">{formatDate(status.connected_at)}</span>}
+          </dd>
+          <dt>Access</dt>
+          <dd className="pt-small">Calendar events, Meet spaces, meeting records</dd>
+        </dl>
+      ) : (
+        <p className="pt-muted pt-small">Connect the company Google account to create Meet links, send Calendar invites, and bring back attendance and transcripts after each call.</p>
+      )}
+      {status.last_error && <p className="pt-small tm-bad mt-gap">{status.last_error}</p>}
+      {status.configured && (
+        status.can_manage ? (
+          <div className="tm-form-actions mt-gap">
+            {status.status !== 'connected' && (
+              <button type="button" className="btn btn--sm" disabled={opening} onClick={connect}>
+                {opening ? 'Opening Google…' : status.status === 'expired' ? 'Reconnect Google' : 'Connect Google'}
+              </button>
+            )}
+            {status.status !== 'disconnected' && (
+              <button type="button" className="tm-link-btn tm-danger" disabled={busy} onClick={disconnect}>
+                Disconnect
+              </button>
+            )}
+          </div>
+        ) : (
+          !status.connected && <p className="pt-muted pt-small mt-gap">Ask an owner to connect Google.</p>
+        )
+      )}
+    </Panel>
+  )
+}
+
+function MyActions({ items, onChange }: { items: ActionItem[]; onChange: () => void }) {
+  const { busy, run } = useMutation()
+  const today = isoDate()
+  if (items.length === 0) return <Empty>Nothing from meetings waiting on you.</Empty>
+  return (
+    <ul className="tm-tasks">
+      {items.map((a) => (
+        <li key={a.id} className="tm-task-row">
+          <input
+            type="checkbox"
+            className="tm-check"
+            disabled={busy}
+            aria-label={`Mark “${a.title}” done`}
+            onChange={async () => {
+              if (await run(`/api/v1/meetings/${a.meeting}/actions/${a.id}/`, { status: 'done' }, 'PATCH')) onChange()
+            }}
+          />
+          <Link to={`/team/meetings/${a.meeting}`} className="tm-task-main">
+            <strong>{a.title}</strong>
+            <span className="pt-muted pt-small">From {a.meeting_title}</span>
+          </Link>
+          <span className={`tm-due${a.due_date && a.due_date < today ? ' tm-bad' : ''}`}>{a.due_date ? (a.due_date === today ? 'Today' : formatDate(a.due_date, false)) : ''}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// ---------------------------------------------------------------- calendar
+
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+function MeetingCalendar() {
+  const [month, setMonth] = useState(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+  })
+  // the grid runs Monday to Sunday and always shows whole weeks
+  const first = new Date(month)
+  first.setDate(1 - ((month.getDay() + 6) % 7))
+  const cells = Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(first)
+    d.setDate(first.getDate() + i)
+    return d
+  })
+  const { data } = useApi<MeetingRow[]>(`/api/v1/meetings/?from=${isoDate(cells[0])}&to=${isoDate(cells[41])}`)
+  const byDay = useMemo(() => {
+    const map = new Map<string, MeetingRow[]>()
+    for (const m of [...(data ?? [])].sort((a, b) => a.scheduled_start.localeCompare(b.scheduled_start))) {
+      const key = isoDate(new Date(m.scheduled_start))
+      map.set(key, [...(map.get(key) ?? []), m])
+    }
+    return map
+  }, [data])
+  const today = isoDate()
+  const shift = (n: number) => setMonth((m) => new Date(m.getFullYear(), m.getMonth() + n, 1))
+  const weeks = cells[35].getMonth() === month.getMonth() ? 6 : 5
+
+  return (
+    <Panel
+      title={month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+      action={
+        <span className="tm-week-nav">
+          <button type="button" className="pt-icon-btn" aria-label="Previous month" onClick={() => shift(-1)}>
+            ‹
+          </button>
+          <button type="button" className="tm-link-btn" onClick={() => setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}>
+            Today
+          </button>
+          <button type="button" className="pt-icon-btn" aria-label="Next month" onClick={() => shift(1)}>
+            ›
+          </button>
+        </span>
+      }
+    >
+      <div className="mt-cal" role="grid" aria-label="Meetings calendar">
+        {WEEKDAYS.map((d) => (
+          <span key={d} className="mt-cal-head" role="columnheader">
+            {d}
+          </span>
+        ))}
+        {cells.slice(0, weeks * 7).map((d) => {
+          const key = isoDate(d)
+          const list = byDay.get(key) ?? []
+          return (
+            <div key={key} role="gridcell" className={`mt-cal-day${d.getMonth() !== month.getMonth() ? ' is-out' : ''}${key === today ? ' is-today' : ''}`}>
+              <span className="mt-cal-num">{d.getDate()}</span>
+              {list.slice(0, 3).map((m) => (
+                <Link key={m.id} to={`/team/meetings/${m.id}`} className={`mt-cal-item mt-cal-item--${m.status}`} title={`${clock(m.scheduled_start)} ${m.title}`}>
+                  <span className="mt-cal-time">{clock(m.scheduled_start)}</span> {m.title}
+                </Link>
+              ))}
+              {list.length > 3 && <span className="pt-muted mt-cal-more">+{list.length - 3} more</span>}
+            </div>
+          )
+        })}
+      </div>
+    </Panel>
+  )
+}
+
+// ---------------------------------------------------------------- history
+
+function History() {
+  const [q, setQ] = useState('')
+  const [term, setTerm] = useState('')
+  const [status, setStatus] = useState('')
+  const [category, setCategory] = useState('')
+  const [project, setProject] = useState('')
+  const [mine, setMine] = useState(false)
+  const projects = useApi<TeamProject[]>('/api/v1/team/projects/')
+  const query = new URLSearchParams({ view: 'history' })
+  if (term) query.set('q', term)
+  if (status) query.set('status', status)
+  if (category) query.set('category', category)
+  if (project) query.set('project', project)
+  if (mine) query.set('mine', '1')
+  const { data, error } = useApi<MeetingRow[]>(`/api/v1/meetings/?${query}`)
+
+  return (
+    <Panel title="Meeting history">
+      <form
+        className="mt-filters"
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault()
+          setTerm(q.trim())
+        }}
+      >
+        <input className="tm-search" type="search" value={q} placeholder="Search titles, notes, decisions, people" aria-label="Search meetings" onChange={(e) => setQ(e.target.value)} onBlur={() => setTerm(q.trim())} />
+        <label className="pt-filter">
+          <span className="sr-only">Status</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">Any status</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+        <label className="pt-filter">
+          <span className="sr-only">Type</span>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">Any type</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="pt-filter">
+          <span className="sr-only">Project</span>
+          <select value={project} onChange={(e) => setProject(e.target.value)}>
+            <option value="">Any project</option>
+            {projects.data?.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="tm-checkline">
+          <input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Only mine
+        </label>
+      </form>
+      {!data ? (
+        <Loading error={error} />
+      ) : data.length === 0 ? (
+        <Empty>{term || status || category || project || mine ? 'No meetings match.' : 'Finished meetings will be listed here with their records.'}</Empty>
+      ) : (
+        <div className="pt-table-wrap">
+          <table className="pt-table">
+            <thead>
+              <tr>
+                <th scope="col">Meeting</th>
+                <th scope="col">When</th>
+                <th scope="col">Organizer</th>
+                <th scope="col" className="pt-num">People</th>
+                <th scope="col">Record</th>
+                <th scope="col" className="pt-num">Open actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((m) => (
+                <tr key={m.id}>
+                  <td>
+                    <Link to={`/team/meetings/${m.id}`} className="mt-cell-link">
+                      <strong>{m.title}</strong>
+                      <span className="pt-muted pt-small">
+                        {[m.project_name || m.category_label, m.decision_count ? `${m.decision_count} decision${m.decision_count === 1 ? '' : 's'}` : '', m.has_transcript ? 'transcript' : ''].filter(Boolean).join(' · ')}
+                      </span>
+                    </Link>
+                  </td>
+                  <td className="pt-small tm-nowrap">
+                    {formatDate(m.scheduled_start)}
+                    <span className="pt-muted pt-block">{timeRange(m)}</span>
+                  </td>
+                  <td className="pt-small">{m.organizer_name || '—'}</td>
+                  <td className="pt-num">{m.participant_count}</td>
+                  <td>
+                    {m.status === 'cancelled' ? <StatusBadge tone={statusTone[m.status]}>{m.status_label}</StatusBadge> : <StatusBadge tone={reportTone[m.report_status]}>{m.report_label}</StatusBadge>}
+                  </td>
+                  <td className="pt-num">{m.open_actions || <span className="pt-muted">0</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Panel>
+  )
+}
+
+function Insights({ o }: { o: MeetingsOverview }) {
+  const i = o.insights
+  const pct = (n: number | null) => (n === null ? '—' : `${n}%`)
+  return (
+    <Panel title="This month at a glance">
+      <dl className="mt-insights">
+        <div>
+          <dt>Time in meetings</dt>
+          <dd>{hm(i.minutes_this_month)}</dd>
+        </div>
+        <div>
+          <dt>Finished meetings with an approved record</dt>
+          <dd>{pct(i.record_rate)}</dd>
+        </div>
+        <div>
+          <dt>Finished meetings with a transcript</dt>
+          <dd>{pct(i.transcript_rate)}</dd>
+        </div>
+        <div>
+          <dt>Action items done</dt>
+          <dd>
+            {i.actions_done_this_month} of {i.actions_this_month}
+          </dd>
+        </div>
+        <div>
+          <dt>Meetings linked to a project</dt>
+          <dd>{i.linked_to_projects}</dd>
+        </div>
+      </dl>
+    </Panel>
+  )
+}
+
+// ---------------------------------------------------------------- scheduling
+
+export function ScheduleForm({ google, onSaved, onCancel }: { google?: GoogleStatus; onSaved: (m: MeetingDetail) => void; onCancel: () => void }) {
+  const { busy, errors, message, run } = useMutation()
+  const staff = useApi<Staff[]>('/api/v1/team/staff/')
+  const projects = useApi<TeamProject[]>('/api/v1/team/projects/')
+  const [team, setTeam] = useState<number[]>([])
+  const [start, setStart] = useState('')
+
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const f = formData(e)
+    const startAt = f.start ? new Date(f.start) : null
+    const mins = Number(f.length || 30)
+    const body = {
+      title: f.title,
+      description: f.description ?? '',
+      category: f.category,
+      project: f.project ? Number(f.project) : null,
+      scheduled_start: startAt?.toISOString(),
+      scheduled_end: startAt ? new Date(startAt.getTime() + mins * 60_000).toISOString() : null,
+      time_zone: viewerZone(),
+      team,
+      guests: (f.guests ?? '').split(/[\s,;]+/).filter(Boolean),
+      agenda_lines: (f.agenda ?? '').split('\n').map((l) => l.trim()).filter(Boolean),
+      send_invites: f.send_invites === 'on',
+    }
+    const saved = (await run('/api/v1/meetings/', body)) as MeetingDetail | null
+    if (saved) onSaved(saved)
+  }
+
+  return (
+    <form className="tm-form" onSubmit={submit}>
+      {message && <p className="pt-error tm-wide">{message}</p>}
+      <Field label="Title" error={errors.title} wide>
+        <input name="title" required placeholder="Sprint review with the client" autoFocus />
+      </Field>
+      <Field label="Starts" error={errors.scheduled_start}>
+        <input name="start" type="datetime-local" required value={start} onChange={(e) => setStart(e.target.value)} />
+      </Field>
+      <Field label="Length" error={errors.scheduled_end}>
+        <select name="length" defaultValue="30">
+          {[15, 30, 45, 60, 90, 120].map((n) => (
+            <option key={n} value={n}>
+              {hm(n)}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Type">
+        <select name="category" defaultValue="internal">
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Project" error={errors.project}>
+        <select name="project" defaultValue="">
+          <option value="">None</option>
+          {projects.data
+            ?.filter((p) => p.status !== 'completed')
+            .map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} · {p.client_name}
+              </option>
+            ))}
+        </select>
+      </Field>
+      <fieldset className="mt-people tm-wide">
+        <legend>Team</legend>
+        {staff.data?.map((s) => (
+          <label key={s.id} className="mt-person-pick">
+            <input
+              type="checkbox"
+              checked={team.includes(s.id)}
+              onChange={(e) => setTeam((t) => (e.target.checked ? [...t, s.id] : t.filter((x) => x !== s.id)))}
+            />
+            {s.full_name}
+          </label>
+        ))}
+      </fieldset>
+      <Field label="Guests (emails)" error={errors.guests} wide>
+        <input name="guests" placeholder="client@company.com, partner@agency.com" />
+      </Field>
+      <Field label="Agenda (one item per line)" wide>
+        <textarea name="agenda" rows={3} placeholder={'Demo of the new checkout\nOpen questions\nNext steps'} />
+      </Field>
+      <Field label="Description" wide>
+        <textarea name="description" rows={2} placeholder="What this meeting is for. Guests see this in the invite." />
+      </Field>
+      <div className="tm-form-actions tm-wide">
+        <button type="submit" className="btn btn--sm" disabled={busy}>
+          {busy ? 'Scheduling…' : 'Schedule'}
+        </button>
+        <button type="button" className="btn btn--sm btn--ghost" onClick={onCancel}>
+          Cancel
+        </button>
+        {google?.connected ? (
+          <label className="tm-checkline">
+            <input type="checkbox" name="send_invites" defaultChecked /> Send Calendar invites with the Meet link
+          </label>
+        ) : (
+          <span className="pt-muted pt-small">Google isn’t connected, so this is saved without a Meet link or invites.</span>
+        )}
+      </div>
+    </form>
+  )
+}

@@ -1,0 +1,2 @@
+# Google OAuth client files (their values go in backend/.env)
+client_secret*.json

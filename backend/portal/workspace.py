@@ -535,7 +535,7 @@ class TodayView(APIView):
 # ---------------------------------------------------------------- search
 
 class SearchView(APIView):
-    """One box for everything: clients, leads, orders, projects, invoices and tasks."""
+    """One box for everything: clients, leads, orders, projects, invoices, tasks and meetings."""
 
     permission_classes = [Staff]
     PER_KIND = 5
@@ -570,5 +570,11 @@ class SearchView(APIView):
             where = f"/team/projects/{t.project_id}" if t.project_id else '/team/work'
             who = t.assignee.full_name if t.assignee else 'Unassigned'
             results.append({'kind': 'task', 'id': t.id, 'title': t.title, 'subtitle': f"{who} · {t.get_status_display()}", 'url': where})
+
+        from meetings.models import Meeting
+        meetings = Meeting.objects.filter(Q(title__icontains=q) | Q(summary__icontains=q) | Q(points__title__icontains=q)).distinct()
+        for m in meetings[:n]:
+            when = timezone.localtime(m.scheduled_start)
+            results.append({'kind': 'meeting', 'id': m.id, 'title': m.title, 'subtitle': f"{when:%d %b %Y} · {m.get_status_display()}", 'url': f"/team/meetings/{m.id}"})
 
         return Response(results)

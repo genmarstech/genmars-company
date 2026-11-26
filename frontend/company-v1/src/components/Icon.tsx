@@ -1,7 +1,7 @@
 import type { IconName } from '../data/site'
 import type { ReactNode } from 'react'
 
-const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock' | 'chart' | 'team' | 'support' | 'search' | 'layout' | 'rocket' | 'card' | 'chat' | 'gear' | 'logout' | 'link2' | 'send', ReactNode> = {
+const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'close' | 'phone' | 'clock' | 'chart' | 'team' | 'support' | 'search' | 'layout' | 'rocket' | 'card' | 'chat' | 'gear' | 'logout' | 'link2' | 'send' | 'video', ReactNode> = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
   code: <path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" />,
   globe: (
@@ -108,6 +108,7 @@ const paths: Record<IconName | 'arrow' | 'mail' | 'pin' | 'check' | 'menu' | 'cl
       <path d="M12 7v5l3 2" />
     </>
   ),
+  video: <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h8A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 3 16.5zM16 10.5l5-3v9l-5-3" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
 }
