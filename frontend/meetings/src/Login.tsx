@@ -3,6 +3,7 @@ import { TEAM_URL } from './meetingTypes'
 import { navigate } from './router'
 import { ApiError, login } from './session'
 import { LogoMark } from './ui/Icon'
+import { LegalFooter } from './Legal'
 
 export function Login() {
   const [busy, setBusy] = useState(false)
@@ -49,6 +50,7 @@ export function Login() {
         </button>
         <a href={`${TEAM_URL}/forgot-password`} className="pt-small ml-forgot">Forgot your password?</a>
       </form>
+      <LegalFooter />
     </main>
   )
 }

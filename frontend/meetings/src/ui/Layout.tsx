@@ -96,6 +96,9 @@ export function Layout({ title, subtitle, actions, children }: { title?: string;
           <strong>Built for innovation</strong>
           <span>Together, we build better.</span>
         </div>
+        <p className="ms-legal">
+          <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link>
+        </p>
       </aside>
 
       <div className="ms-main">

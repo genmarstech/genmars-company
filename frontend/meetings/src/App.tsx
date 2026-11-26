@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { PrivacyPage, TermsPage } from './Legal'
 import { Login } from './Login'
 import { MeetingDetail } from './MeetingDetail'
 import { Home, UpcomingPage } from './Home'
@@ -10,11 +11,15 @@ export default function App() {
   const path = usePathname().replace(/\/+$/, '') || '/'
   const { user } = useSession()
   const signedIn = !!user?.is_staff
+  // anyone can read these, signed in or not (Google links to them from the consent screen)
+  const isPublic = path === '/login' || path === '/privacy' || path === '/terms'
 
   useEffect(() => {
-    if (!signedIn && path !== '/login') navigate(`/login?next=${encodeURIComponent(path + window.location.search)}`)
-  }, [signedIn, path])
+    if (!signedIn && !isPublic) navigate(`/login?next=${encodeURIComponent(path + window.location.search)}`)
+  }, [signedIn, isPublic, path])
 
+  if (path === '/privacy') return <PrivacyPage />
+  if (path === '/terms') return <TermsPage />
   if (path === '/login') return <Login />
   if (!signedIn) return null
   const meeting = path.match(/^\/(\d+)$/)
