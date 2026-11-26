@@ -49,7 +49,7 @@ CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 # The website (Vercel) calls the API on another domain; only its origins may do so.
 CORS_ALLOWED_ORIGINS = env_list(
     'DJANGO_CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173' if DEBUG else 'https://company-v1-gamma.vercel.app',
+    'http://localhost:5173' if DEBUG else 'https://genmars.co.ke,https://www.genmars.co.ke',
 )
 CORS_URLS_REGEX = r'^/api/.*$'
 
@@ -254,7 +254,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or f"Genmars Tech <{os.gete
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # The website, used to build links in emails (e.g. password reset).
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173' if DEBUG else 'https://company-v1-gamma.vercel.app').rstrip('/')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173' if DEBUG else 'https://www.genmars.co.ke').rstrip('/')
 
 # Where new website enquiries are sent.
 ENQUIRY_NOTIFY_EMAIL = os.getenv('ENQUIRY_NOTIFY_EMAIL', 'info@genmars.co.ke')

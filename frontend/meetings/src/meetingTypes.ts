@@ -233,7 +233,7 @@ export function useDirectory() {
 }
 
 /** The team dashboard on the main site, for projects and the task list. */
-export const TEAM_URL = (import.meta.env.VITE_TEAM_URL || 'https://company-v1-gamma.vercel.app').replace(/\/+$/, '')
+export const TEAM_URL = (import.meta.env.VITE_TEAM_URL || 'https://www.genmars.co.ke').replace(/\/+$/, '')
 
 export const GOOGLE_RESULT: Record<string, { tone: 'ok' | 'bad'; text: string }> = {
   connected: { tone: 'ok', text: 'Google is connected. New meetings get a Meet link and a Calendar invite.' },
