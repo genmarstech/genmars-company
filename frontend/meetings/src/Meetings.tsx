@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
+import { ProjectOptions } from './ui/ProjectOptions'
 import { Link } from './ui/Link'
 import { Empty, Loading, Panel, StatusBadge } from './ui/Layout'
 import { formatDate, useApi } from './useApi'
@@ -221,11 +222,7 @@ export function History() {
           <span className="sr-only">Project</span>
           <select value={project} onChange={(e) => setProject(e.target.value)}>
             <option value="">Any project</option>
-            {directory?.projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
+            <ProjectOptions projects={directory?.projects} detail={false} />
           </select>
         </label>
         <label className="tm-checkline">
@@ -373,11 +370,7 @@ export function ScheduleForm({ google, onSaved, onCancel }: { google?: GoogleSta
       <Field label="Project" error={errors.project}>
         <select name="project" defaultValue="">
           <option value="">None</option>
-          {directory?.projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.client_name}
-              </option>
-            ))}
+          <ProjectOptions projects={directory?.projects} />
         </select>
       </Field>
       <fieldset className="mt-people tm-wide">

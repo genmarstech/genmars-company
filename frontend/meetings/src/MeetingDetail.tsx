@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { ProjectOptions } from './ui/ProjectOptions'
 import { Icon } from './ui/Icon'
 import { Link } from './ui/Link'
 import { Empty, Loading, Panel, StatusBadge, Layout } from './ui/Layout'
@@ -234,7 +235,7 @@ function EditForm({ m, onSaved }: { m: Meeting; onSaved: () => void }) {
       <Field label="Project" error={errors.project}>
         <select name="project" defaultValue={m.project ?? ''}>
           <option value="">None</option>
-          {directory?.projects.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.client_name}</option>)}
+          <ProjectOptions projects={directory?.projects} />
         </select>
       </Field>
       <Field label="Description" wide>

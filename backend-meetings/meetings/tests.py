@@ -337,6 +337,15 @@ class MeetingsTests(APITestCase):
         self.assertEqual([p['name'] for p in data['projects']], ['Website redesign'])
         self.assertFalse(data['me']['is_owner'])
 
+    def test_directory_includes_internal_products_and_meetings_can_link_them(self):
+        velora = Project.objects.create(kind='internal', stage='testing', name='Velora', status='in_progress')
+        data = self.client.get('/api/v1/meetings/directory/').data
+        row = next(p for p in data['projects'] if p['name'] == 'Velora')
+        self.assertEqual((row['kind'], row['client_name'], row['stage']), ('internal', 'Genmars', 'testing'))
+        mid = self.schedule(project=velora.id).data['id']
+        self.assertEqual(self.client.get(f'/api/v1/meetings/{mid}/').data['client_name'], 'Genmars')
+        self.assertEqual(self.client.get('/api/v1/meetings/').status_code, 200)
+
     def test_company_wide_decisions_and_actions(self):
         mid = self.schedule().data['id']
         Point.objects.create(meeting_id=mid, kind='decision', title='Use Postgres', status='approved')

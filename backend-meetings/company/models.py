@@ -36,9 +36,12 @@ class Token(models.Model):
 
 
 class Project(models.Model):
-    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
+    # kind is 'client' or 'internal'; internal projects are Genmars's own products and have no client
+    kind = models.CharField(max_length=10, default='client')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=16)
+    stage = models.CharField(max_length=10, blank=True, default='')
 
     class Meta:
         managed = False

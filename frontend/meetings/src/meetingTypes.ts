@@ -224,7 +224,14 @@ export async function joinMeeting(id: number): Promise<string | null> {
 }
 
 export type Staff = { id: number; full_name: string; email: string }
-export type ProjectRef = { id: number; name: string; client_name: string }
+export type ProjectRef = {
+  id: number
+  name: string
+  client_name: string
+  /** internal projects are Genmars's own products (no client), in testing or production */
+  kind?: 'client' | 'internal'
+  stage?: '' | 'testing' | 'production'
+}
 export type Directory = { me: Staff & { is_owner: boolean }; staff: Staff[]; projects: ProjectRef[] }
 
 /** The team and open projects from the company database. */

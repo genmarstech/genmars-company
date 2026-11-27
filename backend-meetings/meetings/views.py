@@ -198,7 +198,7 @@ class MeetingListSerializer(serializers.ModelSerializer):
     report_label = serializers.CharField(source='get_report_status_display', read_only=True)
     organizer_name = serializers.SerializerMethodField()
     project_name = serializers.CharField(source='project.name', read_only=True, default='')
-    client_name = serializers.CharField(source='project.client.full_name', read_only=True, default='')
+    client_name = serializers.SerializerMethodField()
     duration_minutes = serializers.IntegerField(read_only=True)
     participant_count = serializers.IntegerField(read_only=True, default=0)
     open_actions = serializers.IntegerField(read_only=True, default=0)
@@ -213,6 +213,11 @@ class MeetingListSerializer(serializers.ModelSerializer):
             'duration_minutes', 'meet_uri', 'conference_status', 'report_status', 'report_label', 'participant_count',
             'open_actions', 'decision_count', 'has_transcript',
         ]
+
+    def get_client_name(self, m):
+        if not m.project_id:
+            return ''
+        return m.project.client.full_name if m.project.client_id else 'Genmars'
 
     def get_organizer_name(self, m):
         return name_of(m.organizer)
@@ -824,7 +829,13 @@ class DirectoryView(APIView):
         return Response({
             'me': {'id': request.user.id, 'full_name': request.user.full_name, 'email': request.user.email, 'is_owner': request.user.is_superuser},
             'staff': [{'id': u.id, 'full_name': u.full_name, 'email': u.email} for u in staff],
-            'projects': [{'id': p.id, 'name': p.name, 'client_name': p.client.full_name} for p in projects],
+            'projects': [
+                {
+                    'id': p.id, 'name': p.name, 'kind': p.kind, 'stage': p.stage,
+                    'client_name': p.client.full_name if p.client else 'Genmars',
+                }
+                for p in projects
+            ],
         })
 
 
