@@ -69,6 +69,11 @@
 }
 .tm-chart-box {
   position: relative;
+  min-width: 0;
+}
+.tm-chart-box svg {
+  display: block;
+  max-width: 100%;
 }
 .tm-grid {
   stroke: var(--line);
@@ -1365,6 +1370,21 @@ kbd {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+@media (max-width: 1000px) {
+  /* tablets: tighten the profit table so all seven columns fit without a hidden scroll */
+  .tm-profit td,
+  .tm-profit th {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .tm-profit td:first-child {
+    min-width: 0;
+    width: 30%;
+  }
+  .tm-profit .tm-used-bar {
+    width: 44px;
+  }
+}
 @media (max-width: 860px) {
   .tm-hide-sm {
     display: none;
@@ -1403,6 +1423,72 @@ kbd {
   }
 }
 
+/* projects: client / internal switch, and the release card for our own products */
+.tm-proj-tabs {
+  width: fit-content;
+  margin-bottom: 14px;
+}
+.tm-note {
+  margin: -4px 0 16px;
+  max-width: 62ch;
+}
+.tm-stages {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tm-stages li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--subtle);
+}
+.tm-stages strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.tm-stages li.is-current {
+  border-color: var(--cobalt);
+  background: rgba(47, 91, 245, 0.05);
+}
+.tm-stages li.is-current strong {
+  color: var(--cobalt);
+}
+.tm-stages li.is-done strong::after {
+  content: ' ✓';
+  color: #15803d;
+}
+.tm-release-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tm-release-foot p {
+  margin: 0;
+  flex: 1 1 200px;
+}
+.tm-release-form {
+  display: grid;
+  gap: 10px;
+}
+.tm-release-form p {
+  margin: 0;
+}
+.tm-release-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* keep the chart's screen-reader table from widening the page */
 table.sr-only {
   display: block;
@@ -1421,14 +1507,34 @@ table.sr-only {
     border: 1px solid var(--line);
     font-size: 13.5px;
   }
-  .pt-stack td.tm-progress-cell {
+  .pt-stack td[data-label].tm-progress-cell {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 0;
     min-width: 0;
+    white-space: nowrap;
   }
-  .pt-stack td.tm-progress-cell::before {
+  .pt-stack td[data-label].tm-progress-cell::before {
     margin-right: auto;
+  }
+  .pt-stack td.tm-progress-cell .pt-bar {
+    width: 80px;
+  }
+  /* the totals row reads as one block, not a ruled list */
+  .tm-profit tfoot tr {
+    border-top: 1px solid var(--line-strong);
+    margin-top: 6px;
+  }
+  .tm-profit tfoot th,
+  .tm-profit tfoot td {
+    border-top: 0;
+  }
+  .tm-profit tfoot td:empty {
+    display: none;
+  }
+  .tm-profit td:first-child {
+    width: auto;
   }
 }
 

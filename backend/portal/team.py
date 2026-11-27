@@ -8,7 +8,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db.models import Count, F, Q
 from django.utils import timezone
-from rest_framework import mixins, permissions, serializers, viewsets
+from rest_framework import mixins, permissions, serializers, status as http, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -46,21 +47,44 @@ class TeamMilestoneSerializer(MilestoneSerializer):
 class TeamProjectSerializer(serializers.ModelSerializer):
     status_label = serializers.CharField(source='get_status_display', read_only=True)
     health_label = serializers.CharField(source='get_health_display', read_only=True)
-    client_name = serializers.CharField(source='client.full_name', read_only=True)
+    stage_label = serializers.CharField(source='get_stage_display', read_only=True)
+    client_name = serializers.CharField(source='owner_name', read_only=True)
     milestones = TeamMilestoneSerializer(many=True, read_only=True)
     links = ProjectLinkSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
         fields = [
-            'id', 'client', 'client_name', 'name', 'summary', 'service', 'status', 'status_label', 'health',
-            'health_label', 'progress', 'budget', 'start_date', 'due_date', 'updated_at', 'milestones', 'links',
+            'id', 'kind', 'client', 'client_name', 'name', 'summary', 'service', 'status', 'status_label', 'health',
+            'health_label', 'progress', 'budget', 'start_date', 'due_date', 'stage', 'stage_label', 'app_url',
+            'went_live_at', 'updated_at', 'milestones', 'links',
         ]
+        # an internal product only changes stage through go-live / back-to-testing
+        read_only_fields = ['stage', 'went_live_at']
 
     def validate_progress(self, value):
         if value > 100:
             raise serializers.ValidationError('Progress is a percentage from 0 to 100.')
         return value
+
+    def validate(self, attrs):
+        if self.instance and 'kind' in attrs and attrs['kind'] != self.instance.kind:
+            raise serializers.ValidationError({'kind': "A project can't switch between client and internal."})
+        kind = attrs.get('kind', self.instance.kind if self.instance else Project.Kind.CLIENT)
+        client = attrs.get('client', self.instance.client if self.instance else None)
+        if kind == Project.Kind.INTERNAL:
+            if client:
+                raise serializers.ValidationError({'client': 'Internal products belong to Genmars, not a client.'})
+        elif not client:
+            raise serializers.ValidationError({'client': 'Choose a client.'})
+        elif client.is_staff:
+            raise serializers.ValidationError({'client': 'Choose a client, not a team member.'})
+        return attrs
+
+    def create(self, validated_data):
+        if validated_data.get('kind') == Project.Kind.INTERNAL:
+            validated_data['stage'] = Project.Stage.TESTING
+        return super().create(validated_data)
 
 
 class TeamInvoiceSerializer(serializers.ModelSerializer):
@@ -261,8 +285,44 @@ class TeamProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Project.objects.select_related('client').prefetch_related('milestones', 'links')
-        client = self.request.query_params.get('client')
-        return qs.filter(client_id=client) if client else qs
+        params = self.request.query_params
+        if params.get('client'):
+            qs = qs.filter(client_id=params['client'])
+        if params.get('kind') in Project.Kind.values:
+            qs = qs.filter(kind=params['kind'])
+        return qs
+
+    def _internal(self):
+        project = self.get_object()
+        if not project.is_internal:
+            raise serializers.ValidationError({'detail': 'Only internal products have a testing and production stage.'})
+        return project
+
+    @action(detail=True, methods=['post'], url_path='go-live')
+    def go_live(self, request, pk=None):
+        """Move an internal product from Testing to Production so people can use it."""
+        project = self._internal()
+        url = (request.data.get('app_url') or project.app_url or '').strip()
+        if not url:
+            return Response({'app_url': ['Add the link people will open before going live.']}, status=http.HTTP_400_BAD_REQUEST)
+        field = serializers.URLField()
+        try:
+            url = field.run_validation(url)
+        except serializers.ValidationError as e:
+            return Response({'app_url': e.detail}, status=http.HTTP_400_BAD_REQUEST)
+        project.app_url = url
+        project.stage = Project.Stage.PRODUCTION
+        project.went_live_at = project.went_live_at or timezone.now()
+        project.save(update_fields=['app_url', 'stage', 'went_live_at', 'updated_at'])
+        return Response(self.get_serializer(project).data)
+
+    @action(detail=True, methods=['post'], url_path='back-to-testing')
+    def back_to_testing(self, request, pk=None):
+        """Take a live product down again: it stops showing to people until it goes live again."""
+        project = self._internal()
+        project.stage = Project.Stage.TESTING
+        project.save(update_fields=['stage', 'updated_at'])
+        return Response(self.get_serializer(project).data)
 
 
 class TeamMilestoneViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):

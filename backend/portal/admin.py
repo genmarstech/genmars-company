@@ -25,8 +25,8 @@ class MessageInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['name', 'client', 'status', 'health', 'progress', 'due_date', 'updated_at']
-    list_filter = ['status', 'health']
+    list_display = ['name', 'kind', 'client', 'stage', 'status', 'health', 'progress', 'due_date', 'updated_at']
+    list_filter = ['kind', 'stage', 'status', 'health']
     search_fields = ['name', 'client__email', 'client__full_name']
     autocomplete_fields = ['client']
     inlines = [MilestoneInline, ProjectLinkInline]

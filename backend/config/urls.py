@@ -19,6 +19,7 @@ from django.http import JsonResponse
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 from portal.orders import ServiceCatalogueViewSet
+from portal.views import LiveProductsView
 
 catalogue = SimpleRouter()
 catalogue.register(r'services', ServiceCatalogueViewSet, basename='services')
@@ -35,5 +36,6 @@ urlpatterns = [
     path('api/v1/enquiries/', include('applications_communications.urls')),
     path('api/v1/portal/', include('portal.urls')),
     path('api/v1/team/', include('portal.team_urls')),
+    path('api/v1/products/', LiveProductsView.as_view(), name='live-products'),
     path('api/v1/', include(catalogue.urls)),
 ]

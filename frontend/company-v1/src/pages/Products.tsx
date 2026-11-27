@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { apiFetch } from '../api'
 import { Icon } from '../components/Icon'
 import './Products.css'
@@ -24,7 +24,30 @@ const products = [
   },
 ]
 
+type Live = { id: number; name: string; summary: string; url: string }
+
+/** Products the team has moved to production, from the team dashboard. */
+function useLiveProducts() {
+  const [live, setLive] = useState<Live[]>([])
+  useEffect(() => {
+    let off = false
+    apiFetch('/api/v1/products/')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: Live[]) => !off && setLive(Array.isArray(rows) ? rows : []))
+      .catch(() => {})
+    return () => {
+      off = true
+    }
+  }, [])
+  return live
+}
+
+const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
 export function Products() {
+  const live = useLiveProducts()
+  const extra = live.filter((l) => !products.some((p) => same(p.name, l.name)))
+
   return (
     <>
       <section className="wrap pr-hero">
@@ -37,24 +60,45 @@ export function Products() {
       </section>
 
       <section className="wrap pr-grid" aria-label="Products">
-        {products.map((p) => (
-          <article key={p.name} className="card pr-card">
+        {extra.map((l) => (
+          <article key={`live-${l.id}`} className="card pr-card">
             <div className="pr-card-top">
-              <h2>{p.name}</h2>
-              <span className="pr-tag">In development</span>
+              <h2>{l.name}</h2>
+              <span className="pr-tag pr-tag--live">Live</span>
             </div>
-            <p className="pr-tagline">{p.tagline}</p>
-            <p className="muted">{p.text}</p>
-            <ul className="tick">
-              {p.points.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
-            <EarlyAccess product={p.name} />
+            {l.summary && <p className="pr-tagline">{l.summary}</p>}
+            <OpenProduct url={l.url} name={l.name} />
           </article>
         ))}
+        {products.map((p) => {
+          const on = live.find((l) => same(l.name, p.name))
+          return (
+            <article key={p.name} className="card pr-card">
+              <div className="pr-card-top">
+                <h2>{p.name}</h2>
+                <span className={`pr-tag${on ? ' pr-tag--live' : ''}`}>{on ? 'Live' : 'In development'}</span>
+              </div>
+              <p className="pr-tagline">{p.tagline}</p>
+              <p className="muted">{p.text}</p>
+              <ul className="tick">
+                {p.points.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ul>
+              {on ? <OpenProduct url={on.url} name={p.name} /> : <EarlyAccess product={p.name} />}
+            </article>
+          )
+        })}
       </section>
     </>
+  )
+}
+
+function OpenProduct({ url, name }: { url: string; name: string }) {
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn--sm pr-open">
+      Open {name} <Icon name="arrow" size={16} />
+    </a>
   )
 }
 

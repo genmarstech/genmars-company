@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useWidth } from './shared'
 
 type Day = { date: string; milestones: number; messages: number }
 
@@ -10,8 +11,8 @@ const SERIES = [
 /** Grouped bars for the last 7 days, with a legend, hover tooltip and a table for screen readers. */
 export function ActivityChart({ days }: { days: Day[] }) {
   const [hover, setHover] = useState<number | null>(null)
-  const W = 640
-  const H = 220
+  const [box, W] = useWidth<HTMLDivElement>()
+  const H = W < 480 ? 180 : 220
   const pad = { top: 16, right: 8, bottom: 28, left: 28 }
   const max = Math.max(4, ...days.flatMap((d) => [d.milestones, d.messages]))
   const step = Math.ceil(max / 4)
@@ -33,8 +34,8 @@ export function ActivityChart({ days }: { days: Day[] }) {
           </li>
         ))}
       </ul>
-      <div className="tm-chart-box">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Milestones completed and client messages for each of the last 7 days">
+      <div className="tm-chart-box" ref={box}>
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Milestones completed and client messages for each of the last 7 days">
           {[0, 1, 2, 3, 4].map((i) => (
             <g key={i}>
               <line x1={pad.left} x2={W - pad.right} y1={y(i * step)} y2={y(i * step)} className="tm-grid" />

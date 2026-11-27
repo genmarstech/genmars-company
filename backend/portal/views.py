@@ -8,9 +8,24 @@ from applications_communications.models import Enquiry
 from applications_communications.notifications import notify_new_enquiry
 from applications_communications.serializers import PortalRequestSerializer
 from .models import Invoice, Message, Milestone, Order, Project
-from .serializers import InvoiceSerializer, MessageSerializer, ProjectDetailSerializer, ProjectSerializer
+from .serializers import InvoiceSerializer, LiveProductSerializer, MessageSerializer, ProjectDetailSerializer, ProjectSerializer
 
-# Every view here only ever returns the signed-in client's own records.
+# Every view here only ever returns the signed-in client's own records,
+# apart from the live Genmars products, which anyone may see.
+
+
+def live_products():
+    return Project.objects.filter(kind=Project.Kind.INTERNAL, stage=Project.Stage.PRODUCTION).order_by('-went_live_at')
+
+
+class LiveProductsView(APIView):
+    """Genmars's own products that are in production. Public: the Products page lists them."""
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        return Response(LiveProductSerializer(live_products(), many=True).data)
 
 
 class SummaryView(APIView):
@@ -40,6 +55,7 @@ class SummaryView(APIView):
             'projects': ProjectSerializer(projects.exclude(status=Project.Status.COMPLETED)[:4], many=True).data,
             'activity': activity[:6],
             'open_orders': Order.objects.filter(client=user, status__in=Order.OPEN).count(),
+            'products': LiveProductSerializer(live_products(), many=True).data,
             'quotes_waiting': [
                 {'id': o.id, 'number': o.number, 'service': o.service_name, 'price': o.quoted_price, 'valid_until': o.quote_valid_until}
                 for o in Order.objects.filter(client=user, status=Order.Status.QUOTED)

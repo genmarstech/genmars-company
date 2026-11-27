@@ -44,6 +44,29 @@ export function Dashboard() {
             <Stat label="Unread messages" value={data.unread_messages} />
           </div>
 
+          {data.products?.length > 0 && (
+            <Panel title="Apps from Genmars">
+              <ul className="pt-list pt-apps">
+                {data.products.map((p) => (
+                  <li key={p.id}>
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="pt-proj-row">
+                      <span className="pt-proj-icon">
+                        <Icon name="layout" size={16} />
+                      </span>
+                      <span className="pt-proj-main">
+                        <strong>{p.name}</strong>
+                        {p.summary && <span className="pt-muted pt-small">{p.summary}</span>}
+                      </span>
+                      <span className="pt-more">
+                        Open <Icon name="arrow" size={14} />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
+
           <div className="pt-two">
             <Panel
               title="Project progress"
