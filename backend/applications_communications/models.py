@@ -33,13 +33,21 @@ class Enquiry(models.Model):
         WEBSITE = 'website', 'Website form'
         PORTAL = 'portal', 'Client portal'
         EARLY_ACCESS = 'early_access', 'Product early access'
+        TEAM = 'team', 'Added by the team'
+
+    class Pitch(models.TextChoices):
+        # a redesign we make on spec for a business that already has a site
+        DRAFT = 'draft', 'Draft'
+        SENT = 'sent', 'Sent'
+        FEEDBACK = 'feedback', 'Feedback'
+        APPROVED = 'approved', 'Approved'
 
     full_name = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, blank=True, default='')
     service = models.CharField(max_length=32, choices=Service.choices, default=Service.OTHER)
     budget = models.CharField(max_length=32, choices=Budget.choices, default=Budget.UNSURE)
-    message = models.TextField()
+    message = models.TextField(blank=True, default='')
 
     source = models.CharField(max_length=16, choices=Source.choices, default=Source.WEBSITE)
     # set when a signed-in client asks for a new project from their portal
@@ -47,6 +55,19 @@ class Enquiry(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='project_requests'
     )
     status = models.CharField(max_length=32, choices=Status.choices, default=Status.NEW, db_index=True)
+    company_name = models.CharField(max_length=255, blank=True, default='')
+
+    # redesign pitch: their site today, our preview of a better one, and where the pitch stands
+    current_site_url = models.URLField(max_length=500, blank=True, default='')
+    preview_url = models.URLField(max_length=500, blank=True, default='')
+    pitch_status = models.CharField(max_length=16, choices=Pitch.choices, blank=True, default='', db_index=True)
+    pitch_feedback = models.TextField(blank=True, default='')
+    pitch_sent_at = models.DateTimeField(null=True, blank=True)
+    # set once the lead is turned into a client and a project
+    project = models.OneToOneField(
+        'portal.Project', on_delete=models.SET_NULL, null=True, blank=True, related_name='lead'
+    )
+    converted_at = models.DateTimeField(null=True, blank=True)
     internal_notes = models.TextField(blank=True, default='')
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 

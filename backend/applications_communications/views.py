@@ -1,10 +1,13 @@
 import ipaddress
 
 from rest_framework import generics, mixins, permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from .models import Enquiry
 from .notifications import notify_new_enquiry
-from .serializers import EnquiryCreateSerializer, EnquirySerializer
+from . import pitch
+from .serializers import EnquiryCreateSerializer, EnquirySerializer, TeamLeadCreateSerializer
 
 
 def client_ip(request):
@@ -33,14 +36,36 @@ class EnquiryCreateView(generics.CreateAPIView):
         notify_new_enquiry(enquiry)
 
 
-class EnquiryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    """Staff-only lead inbox: list, read and move enquiries through the pipeline."""
+class EnquiryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    """Staff-only lead inbox: list, add, read and move leads through the pipeline, and pitch redesigns."""
 
-    queryset = Enquiry.objects.all()
+    queryset = Enquiry.objects.select_related('project')
     serializer_class = EnquirySerializer
     permission_classes = [permissions.IsAdminUser]
+
+    def get_serializer_class(self):
+        return TeamLeadCreateSerializer if self.action == 'create' else EnquirySerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
         status = self.request.query_params.get('status')
-        return qs.filter(status=status) if status else qs
+        if status:
+            qs = qs.filter(status=status)
+        if self.request.query_params.get('pitch'):
+            qs = qs.exclude(pitch_status='')
+        return qs
+
+    @action(detail=True, methods=['post'])
+    def convert(self, request, pk=None):
+        """The client said "build it": make them a client with a project, a deposit invoice and onboarding."""
+        lead = self.get_object()
+        data = pitch.ConvertSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        project, is_new = pitch.convert(lead, data.validated_data, request.user)
+        lead.refresh_from_db()
+        return Response({
+            **EnquirySerializer(lead).data,
+            'client_is_new': is_new,
+            'project_url': f"/team/projects/{project.id}",
+            'client_url': f"/team/clients/{lead.client_id}",
+        })

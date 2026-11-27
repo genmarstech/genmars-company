@@ -68,8 +68,21 @@ export type Lead = {
   budget: string
   budget_label: string
   message: string
+  source: string
+  source_label: string
+  client: number | null
   status: string
   internal_notes: string
+  company_name: string
+  current_site_url: string
+  preview_url: string
+  pitch_status: '' | 'draft' | 'sent' | 'feedback' | 'approved' | string
+  pitch_status_label: string
+  pitch_feedback: string
+  pitch_sent_at: string | null
+  project: number | null
+  project_name: string
+  converted_at: string | null
   created_at: string
 }
 

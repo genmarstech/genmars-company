@@ -180,6 +180,8 @@ export function ResetPasswordPage() {
   const params = new URLSearchParams(window.location.search)
   const uid = params.get('uid') ?? ''
   const token = params.get('token') ?? ''
+  // new clients we set up from a lead get this link to choose their first password
+  const welcome = params.has('welcome')
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -198,15 +200,18 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Choose a new password" subtitle="You’ll be signed in straight after.">
+    <AuthLayout
+      title={welcome ? 'Welcome to Genmars' : 'Choose a new password'}
+      subtitle={welcome ? 'Choose a password for your account. Next, a few quick questions about your business.' : 'You’ll be signed in straight after.'}
+    >
       {!uid || !token ? (
-        <FormMessage tone="error">This reset link is incomplete. Please request a new one.</FormMessage>
+        <FormMessage tone="error">{welcome ? 'This link is incomplete. Please ask us for a new one.' : 'This reset link is incomplete. Please request a new one.'}</FormMessage>
       ) : (
         <form className="au-form" noValidate onSubmit={onSubmit}>
           {message && <FormMessage tone="error">{message}</FormMessage>}
-          <AuthField label="New password" name="password" type="password" autoComplete="new-password" icon="lock" error={errors.password} />
-          <AuthField label="Confirm new password" name="confirm" type="password" autoComplete="new-password" icon="lock" error={errors.confirm} />
-          <SubmitButton busy={busy}>Save password</SubmitButton>
+          <AuthField label={welcome ? 'Password' : 'New password'} name="password" type="password" autoComplete="new-password" icon="lock" error={errors.password} />
+          <AuthField label={welcome ? 'Confirm password' : 'Confirm new password'} name="confirm" type="password" autoComplete="new-password" icon="lock" error={errors.confirm} />
+          <SubmitButton busy={busy}>{welcome ? 'Continue' : 'Save password'}</SubmitButton>
         </form>
       )}
     </AuthLayout>
