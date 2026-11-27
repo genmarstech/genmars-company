@@ -713,18 +713,37 @@
 .pt-scrim {
   display: none;
 }
-/* laptops with short screens: tighten the sidebar so the whole menu fits */
-@media (min-width: 861px) and (max-height: 860px) {
+/* laptops: tighten the sidebar as the screen gets shorter so the whole menu fits without scrolling */
+@media (min-width: 861px) and (max-height: 960px) {
   .pt-side {
-    gap: 18px;
+    gap: 16px;
     padding-top: 18px;
-    padding-bottom: 14px;
+    padding-bottom: 12px;
   }
   .pt-nav {
     gap: 2px;
   }
   .pt-nav-link {
     min-height: 38px;
+  }
+}
+@media (min-width: 861px) and (max-height: 780px) {
+  .pt-side {
+    gap: 12px;
+    padding-top: 14px;
+  }
+  .pt-nav-link {
+    min-height: 34px;
+    font-size: 14px;
+  }
+  .pt-search {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+@media (min-width: 861px) and (max-height: 640px) {
+  .pt-nav-link {
+    min-height: 30px;
   }
 }
 @media (max-width: 860px) {
