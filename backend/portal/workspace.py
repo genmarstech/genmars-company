@@ -83,6 +83,8 @@ class TaskSerializer(serializers.ModelSerializer):
         project = attrs.get('project', self.instance.project if self.instance else None)
         client = attrs.get('client', self.instance.client if self.instance else None)
         if project:
+            if project.is_internal and client:
+                raise serializers.ValidationError({'client': "Internal products don't have a client."})
             if client and client.id != project.client_id:
                 raise serializers.ValidationError({'client': 'That project belongs to another client.'})
             attrs['client'] = project.client
@@ -195,7 +197,7 @@ class StaffViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 class TimeEntrySerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source='project.name', read_only=True)
-    client_name = serializers.CharField(source='project.client.full_name', read_only=True)
+    client_name = serializers.CharField(source='project.owner_name', read_only=True)
     task_title = serializers.CharField(source='task.title', read_only=True, default='')
     user_name = serializers.CharField(source='user.full_name', read_only=True)
 
@@ -302,7 +304,7 @@ class ProfitabilityView(APIView):
             projects = [p for p in projects if p.is_active]
         money = project_money(projects)
         rows = [
-            {'id': p.id, 'name': p.name, 'client': p.client.full_name, 'status': p.status, 'status_label': p.get_status_display(), **money[p.id]}
+            {'id': p.id, 'name': p.name, 'client': p.owner_name, 'status': p.status, 'status_label': p.get_status_display(), **money[p.id]}
             for p in projects
         ]
         totals = {k: sum((r[k] for r in rows), Decimal(0)) for k in ('value', 'invoiced', 'paid', 'cost', 'profit')}
@@ -490,7 +492,7 @@ class TodayView(APIView):
                 reasons.append(f"No activity for {quiet} days")
             if reasons:
                 risky.append({
-                    'id': p.id, 'name': p.name, 'client': p.client.full_name, 'health': p.health,
+                    'id': p.id, 'name': p.name, 'client': p.owner_name, 'health': p.health,
                     'progress': p.progress, 'due_date': p.due_date, 'reasons': reasons,
                 })
         risky.sort(key=lambda r: (r['health'] != Project.Health.OFF_TRACK, r['due_date'] or today))
@@ -555,7 +557,7 @@ class SearchView(APIView):
             results.append({'kind': 'client', 'id': c.id, 'title': c.full_name, 'subtitle': ' · '.join(filter(None, [company, c.email])), 'url': f"/team/clients/{c.id}"})
 
         for p in Project.objects.select_related('client').filter(Q(name__icontains=q) | Q(summary__icontains=q) | Q(client__full_name__icontains=q))[:n]:
-            results.append({'kind': 'project', 'id': p.id, 'title': p.name, 'subtitle': f"{p.client.full_name} · {p.get_status_display()}", 'url': f"/team/projects/{p.id}"})
+            results.append({'kind': 'project', 'id': p.id, 'title': p.name, 'subtitle': f"{p.owner_name} · {p.get_stage_display() if p.is_internal else p.get_status_display()}", 'url': f"/team/projects/{p.id}"})
 
         for inv in Invoice.objects.select_related('client').filter(Q(number__icontains=q) | Q(description__icontains=q) | Q(client__full_name__icontains=q))[:n]:
             results.append({'kind': 'invoice', 'id': inv.id, 'title': inv.number, 'subtitle': f"{inv.client.full_name} · KES {inv.amount:,.0f} · {inv.get_status_display()}", 'url': f"/team/invoices#invoice-{inv.id}"})

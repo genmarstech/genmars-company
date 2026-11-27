@@ -4,7 +4,20 @@ from django.utils import timezone
 
 
 class Project(models.Model):
-    """A piece of work for a client, shown in their portal."""
+    """A piece of work for a client, shown in their portal, or one of Genmars's own products.
+
+    Internal projects have no client. They start in Testing, where only the team sees them, and
+    are moved to Production when they're ready: then they're listed on the public Products page
+    and in every client's portal so people can open and use them.
+    """
+
+    class Kind(models.TextChoices):
+        CLIENT = 'client', 'Client project'
+        INTERNAL = 'internal', 'Internal product'
+
+    class Stage(models.TextChoices):
+        TESTING = 'testing', 'Testing'
+        PRODUCTION = 'production', 'Production'
 
     class Status(models.TextChoices):
         PLANNING = 'planning', 'Planning'
@@ -18,7 +31,8 @@ class Project(models.Model):
         AT_RISK = 'at_risk', 'At risk'
         OFF_TRACK = 'off_track', 'Off track'
 
-    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='projects')
+    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.CLIENT, db_index=True)
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
     name = models.CharField(max_length=200)
     summary = models.CharField(max_length=255, blank=True, default='')
     service = models.CharField(max_length=32, blank=True, default='')
@@ -28,6 +42,10 @@ class Project(models.Model):
     budget = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text='KES')
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
+    # internal products only
+    stage = models.CharField(max_length=10, choices=Stage.choices, blank=True, default='', db_index=True)
+    app_url = models.URLField(blank=True, default='', help_text='Where people open the product once it is live')
+    went_live_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,7 +53,15 @@ class Project(models.Model):
         ordering = ['-updated_at']
 
     def __str__(self):
-        return f"{self.name} ({self.client.email})"
+        return f"{self.name} ({self.client.email if self.client else 'Genmars'})"
+
+    @property
+    def is_internal(self):
+        return self.kind == self.Kind.INTERNAL
+
+    @property
+    def owner_name(self):
+        return self.client.full_name if self.client else 'Genmars'
 
     @property
     def is_active(self):

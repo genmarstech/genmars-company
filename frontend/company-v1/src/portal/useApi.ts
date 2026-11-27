@@ -89,6 +89,9 @@ export type Message = {
   created_at: string
 }
 
+/** A Genmars product that's in production and open for people to use. */
+export type LiveProduct = { id: number; name: string; summary: string; url: string; went_live_at: string | null }
+
 export type Summary = {
   active_projects: number
   completed_projects: number
@@ -98,6 +101,7 @@ export type Summary = {
   projects: Project[]
   activity: { kind: 'milestone' | 'message'; text: string; project: string; at: string }[]
   open_orders: number
+  products: LiveProduct[]
   quotes_waiting: { id: number; number: string; service: string; price: string; valid_until: string | null }[]
 }
 

@@ -29,8 +29,14 @@ export type TeamClient = {
 export type TeamMilestone = Milestone & { project: number; order: number }
 
 export type TeamProject = Project & {
-  client: number
+  kind: 'client' | 'internal'
+  client: number | null
   client_name: string
+  /** internal products only: testing is team-only, production is open to people */
+  stage: '' | 'testing' | 'production'
+  stage_label: string
+  app_url: string
+  went_live_at: string | null
   milestones: TeamMilestone[]
   links: { id: number; title: string; url: string; created_at: string }[]
 }

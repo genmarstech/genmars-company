@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, postJson, type FieldErrors } from '../auth/session'
 
 /** Submit a form to the team API and surface field errors. */
@@ -76,4 +76,21 @@ export function useOnTimeLogged(reload: () => void) {
     window.addEventListener('genmars:time-logged', reload)
     return () => window.removeEventListener('genmars:time-logged', reload)
   }, [reload])
+}
+
+/** The rendered width of an element, so SVG charts draw at real size and their labels stay readable on phones. */
+export function useWidth<T extends HTMLElement>(fallback = 640) {
+  const ref = useRef<T>(null)
+  const [width, setWidth] = useState(fallback)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width)
+      if (w > 0) setWidth(w)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, width] as const
 }

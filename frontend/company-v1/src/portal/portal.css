@@ -356,6 +356,9 @@
   align-items: center;
   justify-content: center;
 }
+.pt-apps .pt-proj-main {
+  gap: 2px;
+}
 .pt-proj-main {
   flex: 1;
   min-width: 0;
@@ -812,7 +815,9 @@ html.pt-lock body {
     padding: 14px;
   }
   .pt-stat-value {
-    font-size: 26px;
+    /* money like KES 141,000 stays on one line in a half-width tile */
+    font-size: clamp(19px, 5.6vw, 26px);
+    white-space: nowrap;
   }
 }
 

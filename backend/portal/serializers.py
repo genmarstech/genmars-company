@@ -28,6 +28,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
 
 
+class LiveProductSerializer(serializers.ModelSerializer):
+    """A Genmars product that's in production, as clients and visitors see it."""
+
+    url = serializers.URLField(source='app_url', read_only=True)
+
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'summary', 'url', 'went_live_at']
+
+
 class ProjectDetailSerializer(ProjectSerializer):
     milestones = MilestoneSerializer(many=True, read_only=True)
     links = ProjectLinkSerializer(many=True, read_only=True)

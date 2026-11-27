@@ -26,28 +26,68 @@ const HEALTH = [
   { value: 'off_track', label: 'Off track', tone: 'red' },
 ]
 
+type View = 'client' | 'internal'
+
 export function TeamProjects() {
   const params = new URLSearchParams(window.location.search)
   const client = params.get('client') ?? ''
-  const [creating, setCreating] = useState(params.get('new') === '1')
-  const { data, error } = useApi<TeamProject[]>(`/api/v1/team/projects/${client ? `?client=${client}` : ''}`)
+  const [view, setView] = useState<View>(params.get('kind') === 'internal' ? 'internal' : 'client')
+  const [creating, setCreating] = useState<View | null>(params.get('new') === '1' ? 'client' : params.get('new') === 'internal' ? 'internal' : null)
+  const query = client ? `?client=${client}` : `?kind=${view}`
+  const { data, error } = useApi<TeamProject[]>(`/api/v1/team/projects/${query}`)
+
+  const show = (v: View) => {
+    setView(v)
+    const url = new URL(window.location.href)
+    if (v === 'internal') url.searchParams.set('kind', 'internal')
+    else url.searchParams.delete('kind')
+    window.history.replaceState(null, '', url)
+  }
+  const open = (kind: View) => {
+    setCreating((c) => (c === kind ? null : kind))
+    if (!client) show(kind)
+  }
 
   return (
     <TeamLayout
       title="Projects"
-      subtitle={client && data?.[0] ? `Projects for ${data[0].client_name}` : 'Every client project.'}
+      subtitle={client && data?.[0] ? `Projects for ${data[0].client_name}` : 'Client work, and the products we build for ourselves.'}
       actions={
-        <button type="button" className="btn btn--sm" onClick={() => setCreating((c) => !c)}>
-          {creating ? 'Close' : 'New project'}
-        </button>
+        <>
+          <button type="button" className="btn btn--sm" aria-pressed={creating === 'client'} onClick={() => open('client')}>
+            {creating === 'client' ? 'Close' : 'New project'}
+          </button>
+          {!client && (
+            <button type="button" className="btn btn--sm btn--ghost" aria-pressed={creating === 'internal'} onClick={() => open('internal')}>
+              {creating === 'internal' ? 'Close' : 'Internal project'}
+            </button>
+          )}
+        </>
       }
     >
-      {creating && <NewProject defaultClient={client} onCreated={(id) => navigate(`/team/projects/${id}`)} />}
+      {creating === 'client' && <NewProject defaultClient={client} onCreated={(id) => navigate(`/team/projects/${id}`)} />}
+      {creating === 'internal' && <NewInternalProject onCreated={(id) => navigate(`/team/projects/${id}`)} />}
+      {!client && (
+        <div className="tm-seg tm-proj-tabs" role="group" aria-label="Show">
+          <button type="button" aria-pressed={view === 'client'} onClick={() => show('client')}>
+            Client projects
+          </button>
+          <button type="button" aria-pressed={view === 'internal'} onClick={() => show('internal')}>
+            Internal
+          </button>
+        </div>
+      )}
       <Panel>
         {!data ? (
           <Loading error={error} />
         ) : data.length === 0 ? (
-          <Empty>No projects yet. Create one for a client to show it in their portal.</Empty>
+          <Empty>
+            {view === 'internal' && !client
+              ? 'No internal projects yet. Start one for a product of our own: it stays in testing until you put it live.'
+              : 'No projects yet. Create one for a client to show it in their portal.'}
+          </Empty>
+        ) : view === 'internal' && !client ? (
+          <InternalTable rows={data} />
         ) : (
           <div className="pt-table-wrap">
             <table className="pt-table pt-stack">
@@ -89,6 +129,105 @@ export function TeamProjects() {
         )}
       </Panel>
     </TeamLayout>
+  )
+}
+
+export function StageBadge({ stage }: { stage: TeamProject['stage'] }) {
+  return stage === 'production' ? <StatusBadge tone="green">Production</StatusBadge> : <StatusBadge tone="amber">Testing</StatusBadge>
+}
+
+function InternalTable({ rows }: { rows: TeamProject[] }) {
+  return (
+    <div className="pt-table-wrap">
+      <table className="pt-table pt-stack">
+        <thead>
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Stage</th>
+            <th scope="col">Progress</th>
+            <th scope="col">Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((p) => (
+            <tr key={p.id} className="tm-click" onClick={() => navigate(`/team/projects/${p.id}`)}>
+              <td data-label="Product">
+                <Link to={`/team/projects/${p.id}`}>
+                  <strong>{p.name}</strong>
+                </Link>
+                {p.summary && <span className="pt-muted pt-small pt-block">{p.summary}</span>}
+              </td>
+              <td data-label="Stage">
+                <StageBadge stage={p.stage} />
+              </td>
+              <td data-label="Progress" className="tm-progress-cell">
+                <ProgressBar value={p.progress} /> {p.progress}%
+              </td>
+              <td data-label="Link">
+                {p.app_url ? (
+                  <a href={p.app_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                    {p.app_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                ) : (
+                  <span className="pt-muted">Not set</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function NewInternalProject({ onCreated }: { onCreated: (id: number) => void }) {
+  const { busy, errors, message, run } = useMutation()
+
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const filled = Object.fromEntries(Object.entries(formData(e)).filter(([, v]) => v !== null))
+    const created = (await run('/api/v1/team/projects/', { ...filled, kind: 'internal' })) as { id: number } | null
+    if (created) onCreated(created.id)
+  }
+
+  return (
+    <Panel title="New internal project">
+      <p className="pt-muted pt-small tm-note">
+        For our own products. It starts in testing, where only the team can see it. When it’s ready, move it to production and it
+        shows on the Products page and in every client’s portal.
+      </p>
+      <form className="tm-form" onSubmit={submit}>
+        {message && <p className="pt-error tm-wide">{message}</p>}
+        <Field label="Product name" error={errors.name}>
+          <input name="name" required placeholder="Velora" />
+        </Field>
+        <Field label="Service">
+          <select name="service" defaultValue="">
+            <option value="">—</option>
+            {services.map((s) => (
+              <option key={s.slug} value={s.slug}>
+                {s.title}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="What it does, in one line" wide>
+          <input name="summary" placeholder="Bookings, staff and payments for salons" />
+        </Field>
+        <Field label="Testing link (optional)" error={errors.app_url} wide>
+          <input name="app_url" type="url" placeholder="https://velora.genmars.co.ke" />
+        </Field>
+        <Field label="Start date">
+          <input name="start_date" type="date" />
+        </Field>
+        <Field label="Target launch">
+          <input name="due_date" type="date" />
+        </Field>
+        <button type="submit" className="btn btn--sm" disabled={busy}>
+          {busy ? 'Creating…' : 'Start in testing'}
+        </button>
+      </form>
+    </Panel>
   )
 }
 
@@ -160,25 +299,36 @@ export function TeamProjectDetail({ id }: { id: string }) {
     e.preventDefault()
     setSaved(false)
     const body = formData(e)
+    // text fields clear to '' rather than null
+    for (const k of ['summary', 'app_url']) if (k in body && body[k] === null) body[k] = ''
     if (await save.run(`/api/v1/team/projects/${id}/`, { ...body, progress: Number(body.progress ?? 0) }, 'PATCH')) {
       setSaved(true)
       reload()
     }
   }
 
+  const internal = data?.kind === 'internal'
+
   return (
     <TeamLayout
       title={data?.name ?? 'Project'}
-      subtitle={data ? `${data.client_name} · ${kes(data.budget)}` : undefined}
+      subtitle={data ? (internal ? `Internal product · ${data.stage_label}` : `${data.client_name} · ${kes(data.budget)}`) : undefined}
       actions={
-        data && (
+        data &&
+        (internal ? (
+          data.stage === 'production' && data.app_url ? (
+            <a href={data.app_url} target="_blank" rel="noopener noreferrer" className="btn btn--sm btn--ghost">
+              Open product
+            </a>
+          ) : null
+        ) : (
           <Link to={`/team/messages?client=${data.client}`} className="btn btn--sm btn--ghost">
             Message client
           </Link>
-        )
+        ))
       }
     >
-      <Link to="/team/projects" className="pt-back">
+      <Link to={internal ? '/team/projects?kind=internal' : '/team/projects'} className="pt-back">
         ← All projects
       </Link>
       {!data ? (
@@ -186,6 +336,7 @@ export function TeamProjectDetail({ id }: { id: string }) {
       ) : (
         <div className="pt-detail">
           <div className="pt-side-col">
+            {internal && <Release project={data} onChange={reload} />}
             <Panel title="Milestones">
               <Milestones project={data} onChange={reload} />
             </Panel>
@@ -198,13 +349,22 @@ export function TeamProjectDetail({ id }: { id: string }) {
           <Panel title="Project details">
             <form key={data.updated_at} className="tm-form tm-form--stack" onSubmit={submit}>
               {save.message && <p className="pt-error">{save.message}</p>}
-              {saved && <p className="au-msg au-msg--ok">Saved. The client sees the update straight away.</p>}
+              {saved && (
+                <p className="au-msg au-msg--ok">
+                  {internal ? 'Saved.' : 'Saved. The client sees the update straight away.'}
+                </p>
+              )}
               <Field label="Name" error={save.errors.name}>
                 <input name="name" defaultValue={data.name} required />
               </Field>
-              <Field label="Summary">
+              <Field label={internal ? 'What it does, in one line' : 'Summary'}>
                 <input name="summary" defaultValue={data.summary} />
               </Field>
+              {internal && (
+                <Field label="Product link" error={save.errors.app_url}>
+                  <input name="app_url" type="url" defaultValue={data.app_url} placeholder="https://…" />
+                </Field>
+              )}
               <Field label="Status">
                 <select name="status" defaultValue={data.status}>
                   {PROJECT_STATUSES.map((s) => (
@@ -226,7 +386,7 @@ export function TeamProjectDetail({ id }: { id: string }) {
               <Field label="Progress (%)" error={save.errors.progress}>
                 <input name="progress" type="number" min="0" max="100" defaultValue={data.progress} />
               </Field>
-              <Field label="Budget (KES)" error={save.errors.budget}>
+              <Field label={internal ? 'Budget we set aside (KES)' : 'Budget (KES)'} error={save.errors.budget}>
                 <input name="budget" type="number" min="0" step="1000" defaultValue={data.budget ? Number(data.budget) : ''} />
               </Field>
               <Field label="Start date">
@@ -243,6 +403,82 @@ export function TeamProjectDetail({ id }: { id: string }) {
         </div>
       )}
     </TeamLayout>
+  )
+}
+
+/** Testing → Production for one of our own products. */
+function Release({ project, onChange }: { project: TeamProject; onChange: () => void }) {
+  const { busy, errors, message, run } = useMutation()
+  const [confirming, setConfirming] = useState(false)
+  const live = project.stage === 'production'
+
+  const goLive = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (await run(`/api/v1/team/projects/${project.id}/go-live/`, formData(e))) {
+      setConfirming(false)
+      onChange()
+    }
+  }
+  const backToTesting = async () => {
+    if (await run(`/api/v1/team/projects/${project.id}/back-to-testing/`, {})) onChange()
+  }
+
+  return (
+    <Panel title="Release" action={<StageBadge stage={project.stage} />}>
+      <ol className="tm-stages" aria-label="Stage">
+        <li className={live ? 'is-done' : 'is-current'} aria-current={!live ? 'step' : undefined}>
+          <strong>Testing</strong>
+          <span>Team only</span>
+        </li>
+        <li className={live ? 'is-current' : ''} aria-current={live ? 'step' : undefined}>
+          <strong>Production</strong>
+          <span>{live && project.went_live_at ? `Live since ${formatDate(project.went_live_at)}` : 'Open to everyone'}</span>
+        </li>
+      </ol>
+      {message && !errors.app_url && <p className="pt-error">{message}</p>}
+      {live ? (
+        <div className="tm-release-foot">
+          <p className="pt-muted pt-small">
+            Listed on the Products page and in every client’s portal
+            {project.app_url && (
+              <>
+                {' '}
+                as{' '}
+                <a href={project.app_url} target="_blank" rel="noopener noreferrer">
+                  {project.app_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                </a>
+              </>
+            )}
+            .
+          </p>
+          <button type="button" className="btn btn--sm btn--ghost" disabled={busy} onClick={backToTesting}>
+            {busy ? 'Moving…' : 'Back to testing'}
+          </button>
+        </div>
+      ) : confirming ? (
+        <form className="tm-release-form" onSubmit={goLive}>
+          <Field label="Link people will open" error={errors.app_url}>
+            <input name="app_url" type="url" required defaultValue={project.app_url} placeholder="https://velora.genmars.co.ke" />
+          </Field>
+          <p className="pt-muted pt-small">Once it’s live, clients see it in their portal and anyone can find it on the Products page.</p>
+          <div className="tm-release-actions">
+            <button type="submit" className="btn btn--sm" disabled={busy}>
+              {busy ? 'Going live…' : 'Go live'}
+            </button>
+            <button type="button" className="btn btn--sm btn--ghost" onClick={() => setConfirming(false)}>
+              Not yet
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="tm-release-foot">
+          <p className="pt-muted pt-small">Ready for real people? Move it to production.</p>
+          <button type="button" className="btn btn--sm" onClick={() => setConfirming(true)}>
+            Move to production
+          </button>
+        </div>
+      )}
+    </Panel>
   )
 }
 
@@ -283,7 +519,7 @@ function Milestones({ project, onChange }: { project: TeamProject; onChange: () 
               <div>
                 <strong>{m.title}</strong>
                 <span className="pt-muted pt-small">
-                  {m.status === 'done' ? `Completed ${formatDate(m.completed_at)}` : m.due_date ? `Due ${formatDate(m.due_date)}` : 'No due date'}
+                  {m.status === 'done' ? (m.completed_at ? `Completed ${formatDate(m.completed_at)}` : 'Completed') : m.due_date ? `Due ${formatDate(m.due_date)}` : 'No due date'}
                 </span>
               </div>
               <select aria-label={`Status of ${m.title}`} value={m.status} disabled={busy} onChange={(e) => update(m, { status: e.target.value as TeamMilestone['status'] })}>
