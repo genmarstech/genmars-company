@@ -174,7 +174,7 @@ class TeamSummaryView(APIView):
             'upcoming': [
                 {
                     'id': m.id, 'title': m.title, 'due_date': m.due_date, 'project': m.project.name,
-                    'project_id': m.project_id, 'client': m.project.client.full_name,
+                    'project_id': m.project_id, 'client': m.project.owner_name,
                     'overdue': m.due_date < today,
                 }
                 for m in upcoming

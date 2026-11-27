@@ -79,6 +79,9 @@ class InternalProductTests(APITestCase):
 
     def test_internal_projects_work_across_the_dashboard(self):
         p = self.make()
+        from datetime import date
+        from .models import Milestone
+        Milestone.objects.create(project_id=p['id'], title='Beta', due_date=date(2026, 12, 1))
         for url in ['/api/v1/team/today/', '/api/v1/team/profitability/', '/api/v1/team/search/?q=Velora', '/api/v1/team/summary/', '/api/v1/team/projects/?kind=internal']:
             r = self.client.get(url)
             self.assertEqual(r.status_code, status.HTTP_200_OK, url)
